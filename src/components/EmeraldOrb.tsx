@@ -15,13 +15,19 @@ const EmeraldOrb: React.FC = () => {
       <svg className="absolute inset-0 h-full w-full mix-blend-screen opacity-90" aria-hidden>
         <defs>
           <filter id="morph" x="-50%" y="-50%" width="200%" height="200%" filterUnits="objectBoundingBox">
-            <feTurbulence type="fractalNoise" baseFrequency="0.003" numOctaves="2" seed="3">
-              <animate attributeName="baseFrequency" dur="60s" values="0.003;0.006;0.003" repeatCount="indefinite" />
-              <animate attributeName="seed" dur="45s" values="3;9;3" repeatCount="indefinite" />
+            <feTurbulence type="fractalNoise" baseFrequency="0.08" numOctaves="3" seed="5">
+              <animate attributeName="baseFrequency" dur="40s" values="0.06;0.12;0.04;0.09;0.06" repeatCount="indefinite" />
+              <animate attributeName="seed" dur="60s" values="5;9;7;11;5" repeatCount="indefinite" />
             </feTurbulence>
-            <feDisplacementMap in="SourceGraphic" scale="40">
-              <animate attributeName="scale" dur="30s" values="30;60;30" repeatCount="indefinite" />
+            <feDisplacementMap in="SourceGraphic" scale="1200">
+              <animate attributeName="scale" dur="35s" values="800;1500;600;1200;800" repeatCount="indefinite" />
             </feDisplacementMap>
+            <feComponentTransfer>
+              <feFuncR type="discrete" tableValues="0 0.18 0.36 0.54 0.72 0.9 1" />
+              <feFuncG type="discrete" tableValues="0 0.2 0.4 0.6 0.8 1" />
+              <feFuncB type="discrete" tableValues="0 0.22 0.44 0.66 0.88 1" />
+              <feFuncA type="table" tableValues="0 0.6 0.9 1" />
+            </feComponentTransfer>
           </filter>
           <radialGradient id="g1">
             <stop offset="0%" stopColor="hsl(var(--brand-glow))" stopOpacity="0.9" />
@@ -46,6 +52,7 @@ const EmeraldOrb: React.FC = () => {
           </circle>
         </g>
       </svg>
+      <div className="absolute inset-0 orb-pixel-grid" />
       <div className="absolute inset-0 bg-[radial-gradient(120%_100%_at_50%_50%,transparent_28%,hsl(var(--foreground)/0.12)_70%,hsl(var(--foreground)/0.2)_100%)]" />
     </div>
   );
