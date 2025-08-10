@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import EmeraldOrb from "@/components/EmeraldOrb";
 import SectionGlyph from "@/components/SectionGlyph";
+import TestimonialsCarousel from "@/components/TestimonialsCarousel";
 import { ArrowRight } from "lucide-react";
 
 const Index = () => {
@@ -181,26 +182,14 @@ const Index = () => {
         </section>
 
         {/* Testimonials */}
-        <section id="testimonials" className="container py-20 md:py-28" aria-labelledby="testimonials-title">
-          <div className="mx-auto max-w-3xl">
+        <section id="testimonials" className="relative py-20 md:py-28" aria-labelledby="testimonials-title">
+          <div className="container mx-auto max-w-3xl">
             <p className="text-xs tracking-[0.2em] text-muted-foreground">TESTIMONIALS</p>
             <h2 id="testimonials-title" className="mt-2 text-3xl md:text-4xl font-semibold">Trusted by operators and partners</h2>
-            <p className="mt-3 text-muted-foreground">
-              Condensed notes from people I’ve worked with—focused on outcomes, clarity, and how teams felt supported.
-            </p>
           </div>
-          <div className="mt-10 grid gap-6 md:grid-cols-3">
-            {[
-              "Andrew brought clarity to complex change management—owning handoffs, dashboards, and process templates that simplified the work and raised the bar.",
-              "He bridges customer needs with operational rigor. The billing workflow improvements boosted productivity across teams.",
-              "Analytical and impact-driven. Andrew’s reporting and approach influence not just CSMs—leaders learn from him too.",
-            ].map((quote, i) => (
-              <Card key={i} className="p-6">
-                <p className="text-sm text-muted-foreground">“{quote}”</p>
-              </Card>
-            ))}
-          </div>
+          <TestimonialsCarousel className="mt-10" />
         </section>
+
 
         {/* Contact */}
         <section id="contact" className="container py-16 md:py-20" aria-labelledby="contact-title">
