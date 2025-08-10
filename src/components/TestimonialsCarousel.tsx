@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/components/ui/carousel";
+
 import { cn } from "@/lib/utils";
 
 export type Testimonial = {
@@ -58,80 +58,40 @@ interface Props {
 }
 
 const TestimonialsCarousel: React.FC<Props> = ({ className }) => {
-  const [api, setApi] = React.useState<CarouselApi | null>(null);
-  const [paused, setPaused] = React.useState(false);
-
-  // Auto-advance every 7s, pause on hover/focus
-  React.useEffect(() => {
-    if (!api) return;
-    let id: number | undefined;
-    const play = () => {
-      id = window.setInterval(() => {
-        if (!paused) api.scrollNext();
-      }, 7000);
-    };
-    play();
-
-    const onMouseEnter = () => setPaused(true);
-    const onMouseLeave = () => setPaused(false);
-    const root = api.rootNode();
-    root.addEventListener("mouseenter", onMouseEnter);
-    root.addEventListener("mouseleave", onMouseLeave);
-
-    return () => {
-      if (id) window.clearInterval(id);
-      root.removeEventListener("mouseenter", onMouseEnter);
-      root.removeEventListener("mouseleave", onMouseLeave);
-    };
-  }, [api, paused]);
+  // Duplicate testimonials for seamless loop
+  const items = React.useMemo(() => [...TESTIMONIALS, ...TESTIMONIALS], []);
 
   return (
-    <section
-      aria-label="Testimonials carousel"
-      className={cn("relative", className)}
-    >
-      {/* Full-bleed wrapper so slides enter/exit at viewport edges */}
-      <div className="relative w-screen left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
-        <Carousel
-          opts={{ loop: true, align: "start", skipSnaps: false }}
-          setApi={setApi}
-          className="relative"
-        >
-          {/* Remove default gutters for true edge-to-edge */}
-          <CarouselContent className="ml-0">
-            {TESTIMONIALS.map((t, i) => (
-              <CarouselItem key={i} className="pl-0">
-                <article className="group flex items-center justify-center py-10 md:py-16">
-                  {/* Inner container for readable width */}
-                  <div
-                    className={cn(
-                      "mx-4 md:mx-8 w-full max-w-4xl rounded-xl border transition-colors duration-300",
-                      "bg-background/40 backdrop-blur",
-                      "group-hover:bg-primary group-hover:text-primary-foreground"
-                    )}
-                  >
-                    <div className="p-6 md:p-10">
-                      <p className="text-base md:text-lg leading-relaxed">
-                        “{t.quote}”
+    <section aria-label="Testimonials carousel" className={cn("relative", className)}>
+      <style>{`
+        @keyframes marquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+      `}</style>
+      <div className="group relative w-screen left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] overflow-hidden">
+        <div className="flex gap-6 will-change-transform animate-[marquee_50s_linear_infinite] group-hover:[animation-play-state:paused]">
+          {items.map((t, i) => (
+            <article key={i} className="shrink-0 basis-full sm:basis-1/2 lg:basis-1/3 py-6">
+              <div className="h-full rounded-xl border bg-card/40 backdrop-blur transition-colors duration-300 hover:bg-primary hover:text-primary-foreground">
+                <div className="p-6 md:p-8">
+                  <p className="text-base md:text-lg leading-relaxed">“{t.quote}”</p>
+                  <div className="mt-5 flex items-center justify-between">
+                    <div>
+                      <h3 className="text-sm md:text-base font-semibold">{t.author}</h3>
+                      <p className="text-xs md:text-sm text-muted-foreground hover:text-primary-foreground/80">
+                        {t.role}
                       </p>
-                      <div className="mt-5 flex items-center justify-between">
-                        <div>
-                          <h3 className="text-sm md:text-base font-semibold">{t.author}</h3>
-                          <p className="text-xs md:text-sm text-muted-foreground group-hover:text-primary-foreground/80">
-                            {t.role}
-                          </p>
-                        </div>
-                        <span className="text-xs tracking-wider text-muted-foreground/70 group-hover:text-primary-foreground/70">
-                          TESTIMONIAL
-                        </span>
-                      </div>
                     </div>
+                    <span className="text-xs tracking-wider text-muted-foreground/70 group-hover:text-primary-foreground/70">
+                      TESTIMONIAL
+                    </span>
                   </div>
-                </article>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-        </Carousel>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
       </div>
     </section>
   );
