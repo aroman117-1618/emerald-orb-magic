@@ -116,3 +116,14 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  @keyframes orb-drift {
+    0% { transform: translate(-50%, -50%) rotate(0deg) scale(1); }
+    50% { transform: translate(-50%, -48%) rotate(8deg) scale(1.05); }
+    100% { transform: translate(-48%, -50%) rotate(-6deg) scale(0.98); }
+  }
+  .animate-orb-drift {
+    animation: orb-drift 24s ease-in-out infinite alternate;
+  }
+}
