@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import EmeraldOrb from "@/components/EmeraldOrb";
+import SectionGlyph from "@/components/SectionGlyph";
 import { ArrowRight } from "lucide-react";
 
 const Index = () => {
@@ -56,7 +57,10 @@ const Index = () => {
 
       <main className="relative z-10">
         {/* About */}
-        <section id="about" className="container py-20 md:py-28" aria-labelledby="about-title">
+        <section id="about" className="container relative py-20 md:py-28" aria-labelledby="about-title">
+          <div aria-hidden className="pointer-events-none absolute -left-6 -top-10 text-primary/25">
+            <SectionGlyph variant="about" className="h-40 w-40" />
+          </div>
           <div className="mx-auto max-w-3xl">
             <p className="text-xs tracking-[0.2em] text-muted-foreground">ABOUT</p>
             <h2 id="about-title" className="mt-2 text-3xl md:text-4xl font-semibold">Collaboration, precision, and adaptability</h2>
@@ -95,7 +99,10 @@ const Index = () => {
         </section>
 
         {/* Services */}
-        <section id="services" className="container py-20 md:py-28" aria-labelledby="services-title">
+        <section id="services" className="container relative py-20 md:py-28" aria-labelledby="services-title">
+          <div aria-hidden className="pointer-events-none absolute -left-6 -top-10 text-primary/20">
+            <SectionGlyph variant="services" className="h-40 w-40" />
+          </div>
           <div className="mx-auto max-w-3xl">
             <p className="text-xs tracking-[0.2em] text-muted-foreground">SERVICES</p>
             <h2 id="services-title" className="mt-2 text-3xl md:text-4xl font-semibold">Two ways to engage, endless ways to deliver.</h2>
@@ -138,7 +145,10 @@ const Index = () => {
         </section>
 
         {/* Impact */}
-        <section id="impact" className="container py-20 md:py-28" aria-labelledby="impact-title">
+        <section id="impact" className="container relative py-20 md:py-28" aria-labelledby="impact-title">
+          <div aria-hidden className="pointer-events-none absolute -left-6 -top-10 text-primary/20">
+            <SectionGlyph variant="impact" className="h-40 w-40" />
+          </div>
           <div className="mx-auto max-w-3xl">
             <p className="text-xs tracking-[0.2em] text-muted-foreground">IMPACT</p>
             <h2 id="impact-title" className="mt-2 text-3xl md:text-4xl font-semibold">Proof in performance.</h2>
