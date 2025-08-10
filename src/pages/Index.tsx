@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import EmeraldOrb from "@/components/EmeraldOrb";
 import SectionGlyph from "@/components/SectionGlyph";
 import TestimonialsCarousel from "@/components/TestimonialsCarousel";
@@ -77,11 +78,13 @@ const Index = () => {
                 approach in tech — first in value-based discovery and negotiation, then in building systems that surface real
                 customer signals and scale insights across teams.
               </p>
-              <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-                <li>• Turning customer data into proactive growth strategies</li>
-                <li>• Building systems that turn customer signals into scalable action</li>
-                <li>• Translating insights into measurable revenue impact</li>
-              </ul>
+              <div className="mt-5 glass-panel">
+                <ul className="mt-2 space-y-2 text-sm text-muted-foreground">
+                  <li>• Turning customer data into proactive growth strategies</li>
+                  <li>• Building systems that turn customer signals into scalable action</li>
+                  <li>• Translating insights into measurable revenue impact</li>
+                </ul>
+              </div>
             </Card>
             <Card className="p-6">
               <h3 className="text-lg font-semibold">Track Record</h3>
@@ -89,12 +92,14 @@ const Index = () => {
                 Led the full customer lifecycle — pre-sale through renewal — with a focus on scalable automation and cross-functional
                 alignment.
               </p>
-              <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-                <li>• Nift — Early-stage growth & foundational GTM build-out.</li>
-                <li>• Robin — Series A/B scaling, automation design, retention systems.</li>
-                <li>• Datadog — At-scale & FedGov GTM lifecycle automation.</li>
-                <li>• Klaviyo — RevOps automations; contract-to-cash; ROI reporting.</li>
-              </ul>
+              <div className="mt-5 glass-panel">
+                <ul className="mt-2 space-y-2 text-sm text-muted-foreground">
+                  <li>• Nift — Early-stage growth & foundational GTM build-out.</li>
+                  <li>• Robin — Series A/B scaling, automation design, retention systems.</li>
+                  <li>• Datadog — At-scale & FedGov GTM lifecycle automation.</li>
+                  <li>• Klaviyo — RevOps automations; contract-to-cash; ROI reporting.</li>
+                </ul>
+              </div>
             </Card>
           </div>
         </section>
@@ -170,13 +175,12 @@ const Index = () => {
                 <li>• 200+ weekly hours saved via contract-to-cash automations.</li>
                 <li>• 8x increase in committed customers; +18% NRR (+$1.62M ARR).</li>
               </ul>
-              <div className="mt-5 glass-panel">
-                <h4 className="text-sm font-medium">Occupancy-Based & Personal Automations</h4>
-                <ul className="mt-2 space-y-2 text-sm text-muted-foreground">
-                  <li>• Enterprise-scale secure RFID access integrations.</li>
-                  <li>• Hands-free daily briefing sequence via IoT & automation server.</li>
-                </ul>
-              </div>
+              <Separator className="my-5" />
+              <h4 className="text-sm font-medium">Occupancy-Based & Personal Automations</h4>
+              <ul className="mt-2 space-y-2 text-sm text-muted-foreground">
+                <li>• Enterprise-scale secure RFID access integrations.</li>
+                <li>• Hands-free daily briefing sequence via IoT & automation server.</li>
+              </ul>
             </Card>
           </div>
         </section>
@@ -186,6 +190,9 @@ const Index = () => {
           <div className="container mx-auto max-w-3xl">
             <p className="text-xs tracking-[0.2em] text-muted-foreground">TESTIMONIALS</p>
             <h2 id="testimonials-title" className="mt-2 text-3xl md:text-4xl font-semibold">Trusted by operators and partners</h2>
+            <p className="mt-3 text-muted-foreground">
+              A few qualitative proof points from past collaborations—focused on outcomes, clarity, and how teams felt supported.
+            </p>
           </div>
           <TestimonialsCarousel className="mt-10" />
         </section>

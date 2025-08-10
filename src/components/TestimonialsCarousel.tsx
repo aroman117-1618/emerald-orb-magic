@@ -70,7 +70,7 @@ const TestimonialsCarousel: React.FC<Props> = ({ className }) => {
         }
       `}</style>
       <div className="group relative w-screen left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] overflow-hidden">
-        <div className="flex gap-6 will-change-transform animate-[marquee_25s_linear_infinite] group-hover:[animation-play-state:paused]">
+        <div className="flex gap-6 will-change-transform animate-[marquee_12.5s_linear_infinite] group-hover:[animation-play-state:paused]">
           {items.map((t, i) => (
             <article key={i} className="shrink-0 basis-full sm:basis-1/2 lg:basis-1/3 py-6">
               <div className="h-full rounded-xl border bg-card/40 backdrop-blur transition-colors duration-300 hover:bg-primary hover:text-primary-foreground">
@@ -83,9 +83,6 @@ const TestimonialsCarousel: React.FC<Props> = ({ className }) => {
                         {t.role}
                       </p>
                     </div>
-                    <span className="text-xs tracking-wider text-muted-foreground/70 group-hover:text-primary-foreground/70">
-                      TESTIMONIAL
-                    </span>
                   </div>
                 </div>
               </div>
