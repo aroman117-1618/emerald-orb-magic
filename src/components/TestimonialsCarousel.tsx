@@ -58,19 +58,53 @@ interface Props {
 }
 
 const TestimonialsCarousel: React.FC<Props> = ({ className }) => {
-  // Duplicate testimonials for seamless loop
-  const items = React.useMemo(() => [...TESTIMONIALS, ...TESTIMONIALS], []);
+  const trackRef = React.useRef<HTMLDivElement>(null);
+  const [paused, setPaused] = React.useState(false);
+  const items = TESTIMONIALS;
+
+  React.useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    let rafId = 0;
+    let last = 0;
+    let x = 0;
+    const speed = 120; // px/sec
+    const getGap = () => {
+      const styles = window.getComputedStyle(track);
+      const cg = parseFloat(styles.columnGap || '0');
+      return isNaN(cg) ? 0 : cg;
+    };
+    const loop = (t: number) => {
+      if (!last) last = t;
+      const dt = (t - last) / 1000;
+      last = t;
+      if (!paused) {
+        x -= speed * dt;
+        const first = track.firstElementChild as HTMLElement | null;
+        if (first) {
+          const gap = getGap();
+          const w = first.getBoundingClientRect().width;
+          if (Math.abs(x) >= w + gap) {
+            x += w + gap;
+            track.appendChild(first);
+          }
+        }
+        track.style.transform = `translateX(${x}px)`;
+      }
+      rafId = requestAnimationFrame(loop);
+    };
+    rafId = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(rafId);
+  }, [paused]);
 
   return (
     <section aria-label="Testimonials carousel" className={cn("relative", className)}>
-      <style>{`
-        @keyframes marquee {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-      `}</style>
-      <div className="group relative w-screen left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] overflow-hidden">
-        <div className="flex gap-6 will-change-transform animate-[marquee_12.5s_linear_infinite] group-hover:[animation-play-state:paused]">
+      <div
+        className="group relative w-screen left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] overflow-hidden"
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+      >
+        <div ref={trackRef} className="flex gap-6 will-change-transform">
           {items.map((t, i) => (
             <article key={i} className="shrink-0 basis-full sm:basis-1/2 lg:basis-1/3 py-6">
               <div className="h-full rounded-xl border bg-card/40 backdrop-blur transition-colors duration-300 hover:bg-primary hover:text-primary-foreground">

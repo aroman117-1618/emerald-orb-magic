@@ -4,7 +4,7 @@ import { Separator } from "@/components/ui/separator";
 import EmeraldOrb from "@/components/EmeraldOrb";
 import SectionGlyph from "@/components/SectionGlyph";
 import TestimonialsCarousel from "@/components/TestimonialsCarousel";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, FileText, Linkedin, Github } from "lucide-react";
 
 const Index = () => {
   return (
@@ -18,9 +18,9 @@ const Index = () => {
             <img
               src="/lovable-uploads/0beb7de9-fb53-4a31-baec-e3c83857afee.png"
               alt="Andrew in Motion logo"
-              width={20}
-              height={20}
-              className="h-5 w-5 rounded-sm"
+              width={60}
+              height={60}
+              className="h-[60px] w-[60px] rounded-sm"
               loading="eager"
               decoding="async"
             />
@@ -60,13 +60,13 @@ const Index = () => {
       <main className="relative z-10">
         {/* About */}
         <section id="about" className="container relative py-20 md:py-28" aria-labelledby="about-title">
-          <div aria-hidden className="pointer-events-none absolute -left-24 -top-8 md:-left-32 md:-top-12 text-primary/25 z-0">
-            <SectionGlyph variant="about" className="h-44 w-44 md:h-56 md:w-56" />
-          </div>
-          <div className="mx-auto max-w-3xl">
-            <p className="text-xs tracking-[0.2em] text-muted-foreground">ABOUT</p>
-            <h2 id="about-title" className="mt-2 text-3xl md:text-4xl font-semibold">Collaboration, precision, and adaptability</h2>
-            <p className="mt-3 text-muted-foreground">
+          <div className="mx-auto max-w-3xl relative">
+            <div aria-hidden className="pointer-events-none absolute -left-2 md:left-0 -top-8 text-primary/25 z-0">
+              <SectionGlyph variant="about" className="h-44 w-44 md:h-56 md:w-56" />
+            </div>
+            <p className="text-xs tracking-[0.2em] text-muted-foreground relative z-10">ABOUT</p>
+            <h2 id="about-title" className="mt-2 text-3xl md:text-4xl font-semibold relative z-10">Collaboration, precision, and adaptability</h2>
+            <p className="mt-3 text-muted-foreground relative z-10">
               From the kitchen to the boardroom: service instincts + data-driven rigor to design systems that move revenue.
             </p>
           </div>
@@ -106,13 +106,13 @@ const Index = () => {
 
         {/* Services */}
         <section id="services" className="container relative py-20 md:py-28" aria-labelledby="services-title">
-          <div aria-hidden className="pointer-events-none absolute -left-24 -top-8 md:-left-32 md:-top-12 text-primary/20 z-0">
-            <SectionGlyph variant="services" className="h-44 w-44 md:h-56 md:w-56" />
-          </div>
-          <div className="mx-auto max-w-3xl">
-            <p className="text-xs tracking-[0.2em] text-muted-foreground">SERVICES</p>
-            <h2 id="services-title" className="mt-2 text-3xl md:text-4xl font-semibold">Two ways to engage, endless ways to deliver.</h2>
-            <p className="mt-3 text-muted-foreground">Simple hourly pricing + tailored scopes to fit your growth stage.</p>
+          <div className="mx-auto max-w-3xl relative">
+            <div aria-hidden className="pointer-events-none absolute -left-2 md:left-0 -top-8 text-primary/20 z-0">
+              <SectionGlyph variant="services" className="h-44 w-44 md:h-56 md:w-56" />
+            </div>
+            <p className="text-xs tracking-[0.2em] text-muted-foreground relative z-10">SERVICES</p>
+            <h2 id="services-title" className="mt-2 text-3xl md:text-4xl font-semibold relative z-10">Two ways to engage, endless ways to deliver.</h2>
+            <p className="mt-3 text-muted-foreground relative z-10">Simple hourly pricing + tailored scopes to fit your growth stage.</p>
           </div>
           <div className="mt-10 grid gap-6 md:grid-cols-2">
             <Card className="p-6">
@@ -152,13 +152,13 @@ const Index = () => {
 
         {/* Impact */}
         <section id="impact" className="container relative py-20 md:py-28" aria-labelledby="impact-title">
-          <div aria-hidden className="pointer-events-none absolute -left-24 -top-8 md:-left-32 md:-top-12 text-primary/20 z-0">
-            <SectionGlyph variant="impact" className="h-44 w-44 md:h-56 md:w-56" />
-          </div>
-          <div className="mx-auto max-w-3xl">
-            <p className="text-xs tracking-[0.2em] text-muted-foreground">IMPACT</p>
-            <h2 id="impact-title" className="mt-2 text-3xl md:text-4xl font-semibold">Proof in performance.</h2>
-            <p className="mt-3 text-muted-foreground">Selected outcomes from past projects.</p>
+          <div className="mx-auto max-w-3xl relative">
+            <div aria-hidden className="pointer-events-none absolute -left-2 md:left-0 -top-8 text-primary/20 z-0">
+              <SectionGlyph variant="impact" className="h-44 w-44 md:h-56 md:w-56" />
+            </div>
+            <p className="text-xs tracking-[0.2em] text-muted-foreground relative z-10">IMPACT</p>
+            <h2 id="impact-title" className="mt-2 text-3xl md:text-4xl font-semibold relative z-10">Proof in performance.</h2>
+            <p className="mt-3 text-muted-foreground relative z-10">Selected outcomes from past projects.</p>
           </div>
           <div className="mt-10 grid gap-6 md:grid-cols-2">
             <Card className="p-6">
@@ -222,8 +222,21 @@ const Index = () => {
         </section>
       </main>
 
-      <footer className="border-t border-border/60 py-8 text-center text-sm text-muted-foreground">
-        © 2025 Andrew Lonati. All rights reserved.
+      <footer className="border-t border-border/60 py-8">
+        <div className="container flex items-center justify-between text-sm text-muted-foreground">
+          <span>© 2025 Andrew Lonati. All rights reserved.</span>
+          <div className="flex items-center gap-4">
+            <a href="#" target="_blank" rel="noreferrer" aria-label="Resume" className="hover:text-primary transition-colors">
+              <FileText className="h-5 w-5" />
+            </a>
+            <a href="https://www.linkedin.com/in/andrewlonati" target="_blank" rel="noreferrer" aria-label="LinkedIn" className="hover:text-primary transition-colors">
+              <Linkedin className="h-5 w-5" />
+            </a>
+            <a href="https://github.com/andrewlonati" target="_blank" rel="noreferrer" aria-label="GitHub" className="hover:text-primary transition-colors">
+              <Github className="h-5 w-5" />
+            </a>
+          </div>
+        </div>
       </footer>
     </main>
   );
