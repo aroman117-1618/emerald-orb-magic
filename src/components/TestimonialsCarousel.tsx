@@ -107,7 +107,7 @@ const TestimonialsCarousel: React.FC<Props> = ({ className }) => {
         <div ref={trackRef} className="flex gap-6 will-change-transform">
           {items.map((t, i) => (
             <article key={i} className="shrink-0 basis-full sm:basis-1/2 lg:basis-1/3 py-6">
-              <div className="h-full rounded-xl border bg-card/40 backdrop-blur transition-colors duration-300 hover:bg-gradient-to-br hover:from-primary/20 hover:to-primary/10 hover:border-primary/40">
+              <div className="h-full rounded-xl border bg-card/40 backdrop-blur transition-colors duration-300 hover:bg-gradient-to-br hover:from-primary/20 hover:to-primary/10 hover:border-primary/50 ring-0 hover:ring-1 ring-primary/40 hover:shadow-[var(--shadow-glow)] active:scale-[0.99]">
                 <div className="p-6 md:p-8">
                   <p className="text-base md:text-lg leading-relaxed">“{t.quote}”</p>
                   <div className="mt-5 flex items-center justify-between">

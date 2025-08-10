@@ -58,7 +58,7 @@ const MorphoOrbBaseline: React.FC = () => {
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
       <div
-        className="absolute left-1/2 top-1/2 aspect-square -translate-x-1/2 -translate-y-1/2 w-[140vw] sm:w-[110vw] md:w-[80vw] lg:w-[960px]"
+        className="absolute left-1/2 top-1/2 aspect-square -translate-x-1/2 -translate-y-1/2 w-[160vw] sm:w-[120vw] md:w-[88vw] lg:w-[1024px]"
         style={maskStyle}
       >
         <div style={{ position: "relative", width: "100%", height: "100%" }}>
@@ -73,36 +73,43 @@ const MorphoOrbBaseline: React.FC = () => {
             onCanPlay={() => setCanPlay(true)}
             // Overscan to eliminate any hard video frame edges
             style={{
-              width: "120%",
-              height: "120%",
+              width: "150%",
+              height: "150%",
               objectFit: "cover",
               position: "absolute",
-              left: "-10%",
-              top: "-10%",
-              filter: "saturate(1.06) contrast(1.01)",
+              left: "-25%",
+              top: "-25%",
+              filter: "hue-rotate(4deg) saturate(1.18) contrast(1.07)",
             }}
           />
 
-          {/* Color + depth overlays to match emerald palette while preserving detail */}
+          {/* Intensified emerald overlays */}
           <div
             className="absolute inset-0"
             style={{
-              background: "hsl(var(--brand) / 0.30)",
+              background: "hsl(var(--brand) / 0.60)",
               mixBlendMode: "color",
             }}
           />
           <div
             className="absolute inset-0"
             style={{
+              background: "hsl(var(--brand-glow) / 0.60)",
+              mixBlendMode: "saturation",
+            }}
+          />
+          <div
+            className="absolute inset-0"
+            style={{
               background:
-                "radial-gradient(60% 60% at 45% 38%, hsl(var(--brand-glow) / 0.32) 0%, transparent 56%), linear-gradient(135deg, hsl(var(--brand) / 0.24) 0%, hsl(var(--brand-glow) / 0.26) 46%, hsl(var(--brand) / 0.22) 100%)",
+                "radial-gradient(58% 58% at 45% 38%, hsl(var(--brand-glow) / 0.42) 0%, transparent 58%), linear-gradient(135deg, hsl(var(--brand) / 0.36) 0%, hsl(var(--brand-glow) / 0.38) 46%, hsl(var(--brand) / 0.30) 100%)",
               mixBlendMode: "soft-light",
             }}
           />
           <div
             className="absolute inset-0"
             style={{
-              background: "radial-gradient(85% 85% at 50% 55%, hsl(var(--brand-deep) / 0.35) 55%, transparent 90%)",
+              background: "radial-gradient(90% 90% at 50% 55%, hsl(var(--brand-deep) / 0.50) 50%, transparent 92%)",
               mixBlendMode: "multiply",
             }}
           />
