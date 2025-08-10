@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import MorphoOrbVideo from "@/components/MorphoOrbVideo";
+import MorphoOrbBaseline from "@/components/MorphoOrbBaseline";
 import SectionGlyph from "@/components/SectionGlyph";
 import TestimonialsCarousel from "@/components/TestimonialsCarousel";
 import { ArrowRight, FileText, Linkedin, Github } from "lucide-react";
@@ -10,7 +10,7 @@ const Index = () => {
   return (
     <main className="relative min-h-screen overflow-hidden bg-background">
       <a id="top" className="sr-only" aria-hidden tabIndex={-1} />
-      <MorphoOrbVideo />
+      <MorphoOrbBaseline />
 
       <header className="sticky top-0 z-20 border-b border-border/60 bg-background/70 backdrop-blur supports-[backdrop-filter]:bg-background/70">
         <nav className="container flex h-14 items-center justify-between">
