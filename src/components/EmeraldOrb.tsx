@@ -35,13 +35,26 @@ const EmeraldOrb: React.FC = () => {
 
           {/* Blob silhouette mask (drifting circle distorted by morph filter) */}
           <mask id="blobMask" x="0" y="0" width="1000" height="1000" maskUnits="userSpaceOnUse">
-            <g filter="url(#morphFilter)">
-              <circle cx="520" cy="500" r="360" fill="#fff">
-                <animate attributeName="cx" dur="61s" values="520;470;530;520" repeatCount="indefinite" />
-                <animate attributeName="cy" dur="47s" values="500;540;460;500" repeatCount="indefinite" />
-                <animate attributeName="r" dur="73s" values="360;330;390;360" repeatCount="indefinite" />
-              </circle>
-            </g>
+            <path
+              id="morphingBlob"
+              fill="#fff"
+              d="M500,150 C650,170 820,280 850,450 C880,620 770,770 630,820 C490,870 340,840 260,720 C180,600 170,460 220,340 C270,220 350,170 500,150 Z"
+            >
+              <animate
+                attributeName="d"
+                dur="84s"
+                repeatCount="indefinite"
+                values="
+        M500,150 C650,170 820,280 850,450 C880,620 770,770 630,820 C490,870 340,840 260,720 C180,600 170,460 220,340 C270,220 350,170 500,150 Z;
+        M520,140 C690,170 860,300 880,470 C900,650 770,820 600,860 C430,900 270,840 220,690 C170,540 200,420 260,320 C320,220 400,170 520,140 Z;
+        M480,160 C620,140 780,260 840,420 C900,580 840,760 690,820 C540,880 360,860 260,740 C160,620 180,460 240,340 C300,220 360,180 480,160 Z;
+        M500,150 C650,170 820,280 850,450 C880,620 770,770 630,820 C490,870 340,840 260,720 C180,600 170,460 220,340 C270,220 350,170 500,150 Z
+      "
+                calcMode="spline"
+                keyTimes="0;0.33;0.66;1"
+                keySplines="0.25 0.1 0.25 1;0.25 0.1 0.25 1;0.25 0.1 0.25 1"
+              />
+            </path>
           </mask>
         </defs>
 
