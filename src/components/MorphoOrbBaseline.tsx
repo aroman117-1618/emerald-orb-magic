@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 
 // Clean baseline: oversized video with a soft radial mask. No SVG morphing.
 // - Overscans video to avoid edge seams
@@ -10,7 +10,7 @@ const VIDEO_SRC = "https://backend.morpho.org/uploads/2024/11/home-intro-web-2k-
 
 const MorphoOrbBaseline: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [canPlay, setCanPlay] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
 
   const prefersReducedMotion = useMemo(
     () => typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
@@ -18,12 +18,15 @@ const MorphoOrbBaseline: React.FC = () => {
   );
 
   useEffect(() => {
-    if (!videoRef.current || prefersReducedMotion) return;
     const vid = videoRef.current;
+    const wrapper = wrapperRef.current;
+    if (!vid || !wrapper || prefersReducedMotion) return;
 
     const onIntersect: IntersectionObserverCallback = (entries) => {
       for (const entry of entries) {
-        if (entry.isIntersecting) {
+        const isIn = entry.isIntersecting;
+        console.log("[MorphoOrb] intersecting:", isIn);
+        if (isIn) {
           const p = vid.play();
           if (p && typeof p.catch === "function") p.catch(() => {});
         } else {
@@ -32,8 +35,8 @@ const MorphoOrbBaseline: React.FC = () => {
       }
     };
 
-    const observer = new IntersectionObserver(onIntersect, { root: null, threshold: 0.1 });
-    observer.observe(vid);
+    const observer = new IntersectionObserver(onIntersect, { root: null, threshold: 0 });
+    observer.observe(wrapper);
     return () => observer.disconnect();
   }, [prefersReducedMotion]);
 
@@ -60,19 +63,28 @@ const MorphoOrbBaseline: React.FC = () => {
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
       <div
+        ref={wrapperRef}
         className="absolute left-1/2 top-1/2 aspect-square -translate-x-1/2 -translate-y-1/2 w-[160vw] sm:w-[120vw] md:w-[140vw] lg:w-[160vw]"
         style={maskStyle}
       >
         <div style={{ position: "relative", width: "100%", height: "100%" }}>
+          <div
+            className="absolute inset-0"
+            style={{
+              background: "radial-gradient(75% 75% at 50% 50%, hsl(var(--brand-glow) / 0.35) 0%, transparent 70%)",
+            }}
+          />
           <video
             ref={videoRef}
             src={VIDEO_SRC}
             muted
             playsInline
             loop
-            preload="none"
-            autoPlay={canPlay}
-            onCanPlay={() => setCanPlay(true)}
+            preload="auto"
+            autoPlay
+            onLoadedData={() => console.log('[MorphoOrb] loadeddata')}
+            onPlay={() => console.log('[MorphoOrb] play')}
+            onPause={() => console.log('[MorphoOrb] pause')}
             // Overscan to eliminate any hard video frame edges
             style={{
               width: "150%",
