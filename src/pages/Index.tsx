@@ -14,7 +14,7 @@ const Index = () => {
 
       <header className="sticky top-0 z-20 border-b border-border/60 bg-background/70 backdrop-blur supports-[backdrop-filter]:bg-background/70">
         <nav className="container flex h-14 items-center justify-between">
-          <a href="#top" className="flex items-center gap-2 font-semibold">
+          <a href="#top" className="flex items-center gap-0 font-semibold">
             <img
               src="/lovable-uploads/0beb7de9-fb53-4a31-baec-e3c83857afee.png"
               alt="Andrew in Motion logo"
@@ -24,7 +24,7 @@ const Index = () => {
               loading="eager"
               decoding="async"
             />
-            <span>Andrew Lonati</span>
+            <span className="-ml-1">ndrew Lonati</span>
           </a>
           <div className="hidden gap-6 md:flex">
             <a href="#about" className="story-link text-sm text-muted-foreground">About</a>

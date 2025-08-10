@@ -68,7 +68,7 @@ const TestimonialsCarousel: React.FC<Props> = ({ className }) => {
     let rafId = 0;
     let last = 0;
     let x = 0;
-    const speed = 84; // px/sec
+    const speed = 50.4; // px/sec
     const getGap = () => {
       const styles = window.getComputedStyle(track);
       const cg = parseFloat(styles.columnGap || '0');
