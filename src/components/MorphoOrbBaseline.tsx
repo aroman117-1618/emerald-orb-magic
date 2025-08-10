@@ -57,7 +57,7 @@ const MorphoOrbBaseline: React.FC = () => {
       "radial-gradient(farthest-side, rgba(0,0,0,1) 65%, rgba(0,0,0,0.69) 82%, rgba(0,0,0,0.35) 92%, rgba(0,0,0,0) 100%)",
     isolation: "isolate",
     contain: "paint",
-    transform: "translateZ(0)",
+    transform: "translate(-50%, -50%) translateZ(0)",
   };
 
   return (
