@@ -87,7 +87,7 @@ const MorphoOrbBaseline: React.FC = () => {
           <div
             className="absolute inset-0"
             style={{
-              background: "hsl(var(--brand) / 0.10)",
+              background: "hsl(var(--brand) / 0.30)",
               mixBlendMode: "color",
             }}
           />
@@ -95,8 +95,15 @@ const MorphoOrbBaseline: React.FC = () => {
             className="absolute inset-0"
             style={{
               background:
-                "radial-gradient(65% 65% at 45% 40%, hsl(var(--brand-glow) / 0.28) 0%, transparent 55%), linear-gradient(135deg, hsl(var(--brand) / 0.22) 0%, hsl(var(--brand-glow) / 0.24) 45%, hsl(var(--brand) / 0.20) 100%)",
+                "radial-gradient(60% 60% at 45% 38%, hsl(var(--brand-glow) / 0.32) 0%, transparent 56%), linear-gradient(135deg, hsl(var(--brand) / 0.24) 0%, hsl(var(--brand-glow) / 0.26) 46%, hsl(var(--brand) / 0.22) 100%)",
               mixBlendMode: "soft-light",
+            }}
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background: "radial-gradient(85% 85% at 50% 55%, hsl(var(--brand-deep) / 0.35) 55%, transparent 90%)",
+              mixBlendMode: "multiply",
             }}
           />
         </div>
