@@ -42,39 +42,65 @@ const EmeraldOrb: React.FC = () => {
             >
               <animate
                 attributeName="d"
-                dur="84s"
+                dur="22s"
                 repeatCount="indefinite"
                 values="
-        M500,150 C650,170 820,280 850,450 C880,620 770,770 630,820 C490,870 340,840 260,720 C180,600 170,460 220,340 C270,220 350,170 500,150 Z;
-        M520,140 C690,170 860,300 880,470 C900,650 770,820 600,860 C430,900 270,840 220,690 C170,540 200,420 260,320 C320,220 400,170 520,140 Z;
-        M480,160 C620,140 780,260 840,420 C900,580 840,760 690,820 C540,880 360,860 260,740 C160,620 180,460 240,340 C300,220 360,180 480,160 Z;
-        M500,150 C650,170 820,280 850,450 C880,620 770,770 630,820 C490,870 340,840 260,720 C180,600 170,460 220,340 C270,220 350,170 500,150 Z
+        M500,140 C680,170 880,300 900,480 C920,660 760,820 600,860 C430,900 270,840 220,690 C170,540 210,380 280,300 C350,220 420,160 500,140 Z;
+        M520,150 C710,180 870,320 880,490 C890,660 740,820 560,850 C380,880 260,820 230,660 C200,500 230,380 300,300 C370,220 450,170 520,150 Z;
+        M480,150 C640,130 820,260 870,430 C920,600 840,780 680,830 C520,880 360,860 270,740 C180,620 190,460 250,340 C310,220 380,170 480,150 Z;
+        M500,160 C680,180 860,300 880,460 C900,620 780,780 650,830 C520,880 360,840 280,720 C200,600 180,480 240,360 C300,240 360,180 500,160 Z;
+        M510,130 C700,160 900,300 910,490 C920,680 760,860 560,890 C360,920 240,820 210,650 C180,480 230,360 320,280 C410,200 450,150 510,130 Z;
+        M500,140 C680,170 880,300 900,480 C920,660 760,820 600,860 C430,900 270,840 220,690 C170,540 210,380 280,300 C350,220 420,160 500,140 Z
       "
                 calcMode="spline"
-                keyTimes="0;0.33;0.66;1"
-                keySplines="0.25 0.1 0.25 1;0.25 0.1 0.25 1;0.25 0.1 0.25 1"
+                keyTimes="0;0.2;0.4;0.6;0.8;1"
+                keySplines="0.25 0.1 0.25 1;0.25 0.1 0.25 1;0.25 0.1 0.25 1;0.25 0.1 0.25 1;0.25 0.1 0.25 1"
               />
             </path>
           </mask>
+        
+          {/* Quantization filter for subtle posterization/pixel breath */}
+          <filter id="quantize" x="0" y="0" width="100%" height="100%" filterUnits="objectBoundingBox">
+            <feColorMatrix type="saturate" values="0.9"/>
+            <feComponentTransfer>
+              <feFuncR type="discrete" tableValues="0 0.2 0.4 0.6 0.8 1" />
+              <feFuncG type="discrete" tableValues="0 0.2 0.4 0.6 0.8 1" />
+              <feFuncB type="discrete" tableValues="0 0.2 0.4 0.6 0.8 1" />
+              <feFuncA type="table" tableValues="0 1" />
+            </feComponentTransfer>
+          </filter>
+
+          {/* Pixel grid pattern for subtle digital texture */}
+          <pattern id="pixelGrid" width="8" height="8" patternUnits="userSpaceOnUse">
+            <rect width="8" height="8" fill="transparent" />
+            <rect x="0" y="0" width="1" height="1" fill="hsl(var(--foreground))" fillOpacity="0.12" shapeRendering="crispEdges"/>
+            <rect x="4" y="4" width="1" height="1" fill="hsl(var(--foreground))" fillOpacity="0.07" shapeRendering="crispEdges"/>
+          </pattern>
         </defs>
 
         {/* Layered content clipped by the blob silhouette */}
-        <g mask="url(#blobMask)">
+        <g mask="url(#blobMask)" filter="url(#quantize)">
           {/* Glow layer (screen-like) */}
           <g className="mix-blend-screen">
             <circle cx="500" cy="500" r="520" fill="url(#blobGlow)" opacity="0.95">
-              <animate attributeName="cx" dur="61s" values="500;480;520;500" repeatCount="indefinite" />
-              <animate attributeName="cy" dur="49s" values="500;520;480;500" repeatCount="indefinite" />
+              <animate attributeName="cx" dur="19s" values="500;460;540;500" repeatCount="indefinite" />
+              <animate attributeName="cy" dur="17s" values="500;540;460;500" repeatCount="indefinite" />
             </circle>
           </g>
 
           {/* Ink/shadow layer (multiply) */}
           <g className="mix-blend-multiply">
             <circle cx="520" cy="520" r="520" fill="url(#blobInk)" opacity="0.28">
-              <animate attributeName="cx" dur="53s" values="520;560;500;520" repeatCount="indefinite" />
-              <animate attributeName="cy" dur="59s" values="520;480;540;520" repeatCount="indefinite" />
+              <animate attributeName="cx" dur="21s" values="520;580;480;520" repeatCount="indefinite" />
+              <animate attributeName="cy" dur="23s" values="520;480;560;520" repeatCount="indefinite" />
             </circle>
           </g>
+        </g>
+        {/* Subtle pixel-grid overlay inside the silhouette for a 'digital breath' texture */}
+        <g mask="url(#blobMask)" className="mix-blend-soft-light">
+          <rect x="0" y="0" width="1000" height="1000" fill="url(#pixelGrid)" opacity="0.10" shapeRendering="crispEdges">
+            <animateTransform attributeName="transform" type="translate" dur="18s" values="0 0; 6 -8; -5 7; 0 0" repeatCount="indefinite" />
+          </rect>
         </g>
       </svg>
 
