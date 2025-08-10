@@ -57,14 +57,14 @@ const MorphoOrbBaseline: React.FC = () => {
       "radial-gradient(farthest-side, rgba(0,0,0,1) 65%, rgba(0,0,0,0.69) 82%, rgba(0,0,0,0.35) 92%, rgba(0,0,0,0) 100%)",
     isolation: "isolate",
     contain: "paint",
-    transform: "translate(-50%, -50%) translateZ(0)",
+    willChange: "transform",
   };
 
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
       <div
         ref={wrapperRef}
-        className="absolute left-1/2 top-1/2 aspect-square -translate-x-1/2 -translate-y-1/2 w-[160vw] sm:w-[120vw] md:w-[140vw] lg:w-[160vw]"
+        className="absolute left-1/2 top-1/2 aspect-square -translate-x-1/2 -translate-y-1/2 w-[180vw] sm:w-[150vw] md:w-[180vw] lg:w-[200vw]"
         style={maskStyle}
       >
         <div style={{ position: "relative", width: "100%", height: "100%" }}>
