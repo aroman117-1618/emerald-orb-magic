@@ -1,6 +1,19 @@
-import React from "react";
+import React, { useMemo } from "react";
 
 const EmeraldOrb: React.FC = () => {
+  const prefersReducedMotion = useMemo(
+    () => typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    []
+  );
+
+  if (prefersReducedMotion) {
+    return (
+      <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(120%_100%_at_50%_50%,transparent_30%,hsl(var(--foreground)/0.1)_70%,hsl(var(--foreground)/0.16)_100%)]" />
+      </div>
+    );
+  }
+
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
       {/* Central SVG-driven blob with masked silhouette and layered fills */}
