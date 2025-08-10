@@ -49,15 +49,14 @@ const MorphoOrbBaseline: React.FC = () => {
     );
   }
 
-  // Shared masked wrapper style (radial soft circle)
-  const maskStyle: React.CSSProperties = {
-    WebkitMaskImage:
-      "radial-gradient(farthest-side, rgba(0,0,0,1) 70%, rgba(0,0,0,0.69) 84%, rgba(0,0,0,0.35) 93%, rgba(0,0,0,0) 100%)",
-    maskImage:
-      "radial-gradient(farthest-side, rgba(0,0,0,1) 70%, rgba(0,0,0,0.69) 84%, rgba(0,0,0,0.35) 93%, rgba(0,0,0,0) 100%)",
-    isolation: "isolate",
-    contain: "paint",
-    willChange: "transform",
+  // Clip to a perfect circle (no mask) to avoid GPU sampling seams; feather is handled by a separate overlay
+  const clipStyle: React.CSSProperties = {
+    borderRadius: '9999px',
+    overflow: 'hidden',
+    clipPath: 'circle(50% at 50% 50%)',
+    isolation: 'isolate',
+    contain: 'paint',
+    willChange: 'transform',
   };
 
   return (
@@ -65,15 +64,9 @@ const MorphoOrbBaseline: React.FC = () => {
       <div
         ref={wrapperRef}
         className="absolute left-1/2 top-1/2 aspect-square -translate-x-1/2 -translate-y-1/2 w-[110vw] sm:w-[100vw] md:w-[110vw] lg:w-[120vw]"
-        style={maskStyle}
+        style={clipStyle}
       >
-        <div style={{ position: "relative", width: "100%", height: "100%" }}>
-          <div
-            className="absolute inset-0"
-            style={{
-              background: "radial-gradient(75% 75% at 50% 50%, hsl(var(--brand-glow) / 0.35) 0%, transparent 70%)",
-            }}
-          />
+        <div style={{ position: 'relative', width: '100%', height: '100%' }}>
           <video
             ref={videoRef}
             src={VIDEO_SRC}
@@ -85,48 +78,31 @@ const MorphoOrbBaseline: React.FC = () => {
             onLoadedData={() => console.log('[MorphoOrb] loadeddata')}
             onPlay={() => console.log('[MorphoOrb] play')}
             onPause={() => console.log('[MorphoOrb] pause')}
-            // Overscan to eliminate any hard video frame edges
             style={{
-              width: "180%",
-              height: "180%",
-              objectFit: "cover",
-              position: "absolute",
-              left: "-40%",
-              top: "-40%",
-              transform: "translateZ(0) scale(1.005)",
-              backfaceVisibility: "hidden",
-              filter: "hue-rotate(4deg) saturate(1.18) contrast(1.07)",
+              width: '180%',
+              height: '180%',
+              objectFit: 'cover',
+              position: 'absolute',
+              left: '-40%',
+              top: '-40%',
+              transform: 'translateZ(0) scale(1.005)',
+              backfaceVisibility: 'hidden',
+              filter: 'hue-rotate(4deg) saturate(1.12) contrast(1.04)',
             }}
           />
 
-          {/* Intensified emerald overlays */}
+          {/* Simple brand tint without blend-modes to avoid artifacts */}
           <div
-            className="absolute inset-0"
-            style={{
-              background: "hsl(var(--brand) / 0.80)",
-              mixBlendMode: "color",
-            }}
+            className="absolute inset-0 pointer-events-none"
+            style={{ background: 'hsl(var(--brand) / 0.14)' }}
           />
+
+          {/* Edge feather: visually fade to page background near the boundary */}
           <div
-            className="absolute inset-0"
-            style={{
-              background: "hsl(var(--brand-glow) / 0.70)",
-              mixBlendMode: "saturation",
-            }}
-          />
-          <div
-            className="absolute inset-0"
+            className="absolute inset-0 pointer-events-none"
             style={{
               background:
-                "radial-gradient(58% 58% at 45% 38%, hsl(var(--brand-glow) / 0.42) 0%, transparent 58%)",
-              mixBlendMode: "soft-light",
-            }}
-          />
-          <div
-            className="absolute inset-0"
-            style={{
-              background: "radial-gradient(90% 90% at 50% 55%, hsl(var(--brand-deep) / 0.50) 50%, transparent 92%)",
-              mixBlendMode: "multiply",
+                'radial-gradient(75% 75% at 50% 50%, transparent 64%, hsl(var(--background) / 0.55) 82%, hsl(var(--background) / 0.95) 98%)',
             }}
           />
         </div>
