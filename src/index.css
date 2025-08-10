@@ -120,30 +120,30 @@ All colors MUST be HSL.
 @layer utilities {
   @keyframes orb-drift {
     0% { transform: translate(-50%, -50%) rotate(0deg) scale(1); }
-    50% { transform: translate(-52%, -48%) rotate(14deg) scale(1.12); }
-    100% { transform: translate(-48%, -52%) rotate(-12deg) scale(0.94); }
+    50% { transform: translate(-54%, -46%) rotate(28deg) scale(1.24); }
+    100% { transform: translate(-46%, -54%) rotate(-24deg) scale(0.86); }
   }
   @keyframes orb-breathe {
-    0% { transform: translate(-50%, -50%) scale(0.92); }
-    50% { transform: translate(-50%, -50%) scale(1.12); }
-    100% { transform: translate(-50%, -50%) scale(0.92); }
+    0% { transform: translate(-50%, -50%) scale(0.80); }
+    50% { transform: translate(-50%, -50%) scale(1.30); }
+    100% { transform: translate(-50%, -50%) scale(0.80); }
   }
   @keyframes orb-flow {
-    0% { filter: blur(12px) saturate(1.1) contrast(1.05); }
-    50% { filter: blur(18px) saturate(1.35) contrast(1.2); }
-    100% { filter: blur(12px) saturate(1.1) contrast(1.05); }
+    0% { filter: blur(8px) saturate(1.2) contrast(1.25); }
+    50% { filter: blur(12px) saturate(1.5) contrast(1.35); }
+    100% { filter: blur(8px) saturate(1.2) contrast(1.25); }
   }
-  .animate-orb-drift { animation: orb-drift 18s ease-in-out infinite alternate; }
-  .animate-orb-breathe { animation: orb-breathe 12s ease-in-out infinite; }
-  .animate-orb-flow { animation: orb-flow 20s ease-in-out infinite; }
+  .animate-orb-drift { animation: orb-drift 14s ease-in-out infinite alternate; }
+  .animate-orb-breathe { animation: orb-breathe 3s ease-in-out infinite; }
+  .animate-orb-flow { animation: orb-flow 12s ease-in-out infinite; }
   .orb-noise {
     background-image:
-      radial-gradient(70% 70% at 50% 50%, hsl(var(--brand-glow) / 0.4) 0%, hsl(var(--brand) / 0.3) 38%, transparent 58%),
-      repeating-conic-gradient(from 0deg, hsl(var(--brand-glow) / 0.16) 0 2deg, transparent 2deg 4deg),
-      repeating-radial-gradient(circle at 50% 50%, hsl(var(--brand-glow) / 0.22) 0 0.5px, transparent 0.5px 1.5px);
+      radial-gradient(70% 70% at 50% 50%, hsl(var(--brand-glow) / 0.48) 0%, hsl(var(--brand) / 0.34) 36%, transparent 56%),
+      repeating-conic-gradient(from 0deg, hsl(var(--brand-glow) / 0.22) 0 1deg, transparent 1deg 2deg),
+      repeating-radial-gradient(circle at 50% 50%, hsl(var(--brand-glow) / 0.28) 0 0.4px, transparent 0.4px 1px);
     mix-blend-mode: screen;
-    filter: blur(10px) saturate(1.25) contrast(1.2);
-    opacity: 0.9;
+    filter: blur(6px) saturate(1.35) contrast(1.35);
+    opacity: 1;
   }
 }
 
