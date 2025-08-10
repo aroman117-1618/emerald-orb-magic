@@ -39,7 +39,7 @@ const Index = () => {
       <section className="container relative z-10 py-20 md:py-28 text-center" aria-labelledby="hero-title">
         <p className="text-xs tracking-[0.2em] text-muted-foreground">CS ADVISORY • GTM AUTOMATION • LIFECYCLE SYSTEMS</p>
         <h1 id="hero-title" className="mt-3 text-5xl md:text-6xl font-bold tracking-tight">
-          Scale your growth <span className="text-foreground">without scaling headcount</span>
+          Scale your growth <span className="text-primary">without scaling headcount</span>
         </h1>
         <p className="mt-6 text-lg text-muted-foreground max-w-3xl mx-auto">
           Partnering with leaders to remove bottlenecks, create customer-centric systems, and turn signals into sustainable growth.
