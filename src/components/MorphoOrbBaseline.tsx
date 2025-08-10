@@ -52,6 +52,7 @@ const MorphoOrbBaseline: React.FC = () => {
       "radial-gradient(closest-side, rgba(0,0,0,1) 62%, rgba(0,0,0,0.7) 76%, rgba(0,0,0,0.35) 86%, rgba(0,0,0,0.0) 100%)",
     maskImage:
       "radial-gradient(closest-side, rgba(0,0,0,1) 62%, rgba(0,0,0,0.7) 76%, rgba(0,0,0,0.35) 86%, rgba(0,0,0,0.0) 100%)",
+    isolation: "isolate",
   };
 
   return (
@@ -78,16 +79,23 @@ const MorphoOrbBaseline: React.FC = () => {
               position: "absolute",
               left: "-10%",
               top: "-10%",
-              filter: "saturate(1.1) contrast(1.02)",
+              filter: "saturate(1.06) contrast(1.01)",
             }}
           />
 
-          {/* Subtle brand tint kept inside the same mask to avoid edge seams */}
+          {/* Color + depth overlays to match emerald palette while preserving detail */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background: "hsl(var(--brand) / 0.10)",
+              mixBlendMode: "color",
+            }}
+          />
           <div
             className="absolute inset-0"
             style={{
               background:
-                "linear-gradient(135deg, hsl(var(--brand)/0.40) 0%, hsl(var(--brand-glow)/0.55) 45%, hsl(var(--brand)/0.30) 100%)",
+                "radial-gradient(65% 65% at 45% 40%, hsl(var(--brand-glow) / 0.28) 0%, transparent 55%), linear-gradient(135deg, hsl(var(--brand) / 0.22) 0%, hsl(var(--brand-glow) / 0.24) 45%, hsl(var(--brand) / 0.20) 100%)",
               mixBlendMode: "soft-light",
             }}
           />
