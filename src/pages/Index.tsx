@@ -109,7 +109,7 @@ const Index = () => {
                 <li>• Team coaching & playbook development.</li>
                 <li>• Renewal, expansion, and churn mitigation programs.</li>
               </ul>
-              <div className="mt-5 rounded-lg border border-border/60 p-4">
+              <div className="mt-5 glass-panel">
                 <p className="text-xs tracking-wider text-muted-foreground">EXPECTED RESULTS</p>
                 <ul className="mt-2 space-y-2 text-sm text-muted-foreground">
                   <li>• Integrated CX Leadership support</li>
@@ -125,7 +125,7 @@ const Index = () => {
                 <li>• AI & automation: CRM, CS platforms, comms.</li>
                 <li>• Cross-system integrations for data integrity & reporting.</li>
               </ul>
-              <div className="mt-5 rounded-lg border border-border/60 p-4">
+              <div className="mt-5 glass-panel">
                 <p className="text-xs tracking-wider text-muted-foreground">EXPECTED RESULTS</p>
                 <ul className="mt-2 space-y-2 text-sm text-muted-foreground">
                   <li>• 10–20 hours saved per GTM rep per week.</li>
@@ -159,7 +159,7 @@ const Index = () => {
                 <li>• 200+ weekly hours saved via contract-to-cash automations.</li>
                 <li>• 8x increase in committed customers; +18% NRR (+$1.62M ARR).</li>
               </ul>
-              <div className="mt-5 rounded-lg border border-border/60 p-4">
+              <div className="mt-5 glass-panel">
                 <h4 className="text-sm font-medium">Occupancy-Based & Personal Automations</h4>
                 <ul className="mt-2 space-y-2 text-sm text-muted-foreground">
                   <li>• Enterprise-scale secure RFID access integrations.</li>
