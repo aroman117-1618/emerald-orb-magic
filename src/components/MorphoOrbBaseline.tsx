@@ -6,7 +6,7 @@ import React, { useEffect, useMemo, useRef } from "react";
 // - Optional brand tint overlay (masked as well) without harsh blend edges
 // - Plays/pauses based on viewport visibility and respects reduced motion
 
-const VIDEO_SRC = "https://backend.morpho.org/uploads/2024/11/home-intro-web-2k-60-2.mp4";
+const VIDEO_SRC = "https://backend.morpho.org/uploads/2024/11/home-intro-web-2k-60-2.mp4?v=2";
 
 const MorphoOrbBaseline: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -52,9 +52,9 @@ const MorphoOrbBaseline: React.FC = () => {
   // Shared masked wrapper style (radial soft circle)
   const maskStyle: React.CSSProperties = {
     WebkitMaskImage:
-      "radial-gradient(farthest-side, rgba(0,0,0,1) 65%, rgba(0,0,0,0.69) 82%, rgba(0,0,0,0.35) 92%, rgba(0,0,0,0) 100%)",
+      "radial-gradient(farthest-side, rgba(0,0,0,1) 70%, rgba(0,0,0,0.69) 84%, rgba(0,0,0,0.35) 93%, rgba(0,0,0,0) 100%)",
     maskImage:
-      "radial-gradient(farthest-side, rgba(0,0,0,1) 65%, rgba(0,0,0,0.69) 82%, rgba(0,0,0,0.35) 92%, rgba(0,0,0,0) 100%)",
+      "radial-gradient(farthest-side, rgba(0,0,0,1) 70%, rgba(0,0,0,0.69) 84%, rgba(0,0,0,0.35) 93%, rgba(0,0,0,0) 100%)",
     isolation: "isolate",
     contain: "paint",
     willChange: "transform",
@@ -64,7 +64,7 @@ const MorphoOrbBaseline: React.FC = () => {
     <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
       <div
         ref={wrapperRef}
-        className="absolute left-1/2 top-1/2 aspect-square -translate-x-1/2 -translate-y-1/2 w-[130vw] sm:w-[115vw] md:w-[130vw] lg:w-[145vw]"
+        className="absolute left-1/2 top-1/2 aspect-square -translate-x-1/2 -translate-y-1/2 w-[110vw] sm:w-[100vw] md:w-[110vw] lg:w-[120vw]"
         style={maskStyle}
       >
         <div style={{ position: "relative", width: "100%", height: "100%" }}>
@@ -87,12 +87,14 @@ const MorphoOrbBaseline: React.FC = () => {
             onPause={() => console.log('[MorphoOrb] pause')}
             // Overscan to eliminate any hard video frame edges
             style={{
-              width: "150%",
-              height: "150%",
+              width: "180%",
+              height: "180%",
               objectFit: "cover",
               position: "absolute",
-              left: "-25%",
-              top: "-25%",
+              left: "-40%",
+              top: "-40%",
+              transform: "translateZ(0) scale(1.005)",
+              backfaceVisibility: "hidden",
               filter: "hue-rotate(4deg) saturate(1.18) contrast(1.07)",
             }}
           />
