@@ -64,7 +64,7 @@ const MorphoOrbBaseline: React.FC = () => {
     <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
       <div
         ref={wrapperRef}
-        className="absolute left-1/2 top-1/2 aspect-square -translate-x-1/2 -translate-y-1/2 w-[180vw] sm:w-[150vw] md:w-[180vw] lg:w-[200vw]"
+        className="absolute left-1/2 top-1/2 aspect-square -translate-x-1/2 -translate-y-1/2 w-[130vw] sm:w-[115vw] md:w-[130vw] lg:w-[145vw]"
         style={maskStyle}
       >
         <div style={{ position: "relative", width: "100%", height: "100%" }}>
