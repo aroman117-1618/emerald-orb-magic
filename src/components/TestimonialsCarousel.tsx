@@ -68,7 +68,7 @@ const TestimonialsCarousel: React.FC<Props> = ({ className }) => {
     let rafId = 0;
     let last = 0;
     let x = 0;
-    const speed = 120; // px/sec
+    const speed = 84; // px/sec
     const getGap = () => {
       const styles = window.getComputedStyle(track);
       const cg = parseFloat(styles.columnGap || '0');
@@ -107,13 +107,13 @@ const TestimonialsCarousel: React.FC<Props> = ({ className }) => {
         <div ref={trackRef} className="flex gap-6 will-change-transform">
           {items.map((t, i) => (
             <article key={i} className="shrink-0 basis-full sm:basis-1/2 lg:basis-1/3 py-6">
-              <div className="h-full rounded-xl border bg-card/40 backdrop-blur transition-colors duration-300 hover:bg-primary hover:text-primary-foreground">
+              <div className="h-full rounded-xl border bg-card/40 backdrop-blur transition-colors duration-300 hover:bg-gradient-to-br hover:from-primary/20 hover:to-primary/10 hover:border-primary/40">
                 <div className="p-6 md:p-8">
                   <p className="text-base md:text-lg leading-relaxed">“{t.quote}”</p>
                   <div className="mt-5 flex items-center justify-between">
                     <div>
                       <h3 className="text-sm md:text-base font-semibold">{t.author}</h3>
-                      <p className="text-xs md:text-sm text-muted-foreground hover:text-primary-foreground/80">
+                      <p className="text-xs md:text-sm text-muted-foreground">
                         {t.role}
                       </p>
                     </div>

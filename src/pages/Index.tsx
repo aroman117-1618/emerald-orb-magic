@@ -226,13 +226,13 @@ const Index = () => {
         <div className="container flex items-center justify-between text-sm text-muted-foreground">
           <span>© 2025 Andrew Lonati. All rights reserved.</span>
           <div className="flex items-center gap-4">
-            <a href="#" target="_blank" rel="noreferrer" aria-label="Resume" className="hover:text-primary transition-colors">
+            <a href="/resume-andrew-lonati.pdf" target="_blank" rel="noreferrer" aria-label="Resume" className="hover:text-primary transition-colors">
               <FileText className="h-5 w-5" />
             </a>
-            <a href="https://www.linkedin.com/in/andrewlonati" target="_blank" rel="noreferrer" aria-label="LinkedIn" className="hover:text-primary transition-colors">
+            <a href="https://www.linkedin.com/in/andrewroman117/" target="_blank" rel="noreferrer" aria-label="LinkedIn" className="hover:text-primary transition-colors">
               <Linkedin className="h-5 w-5" />
             </a>
-            <a href="https://github.com/andrewlonati" target="_blank" rel="noreferrer" aria-label="GitHub" className="hover:text-primary transition-colors">
+            <a href="https://github.com/aroman117-1618" target="_blank" rel="noreferrer" aria-label="GitHub" className="hover:text-primary transition-colors">
               <Github className="h-5 w-5" />
             </a>
           </div>
