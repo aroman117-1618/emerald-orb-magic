@@ -49,16 +49,18 @@ const MorphoOrbBaseline: React.FC = () => {
   // Shared masked wrapper style (radial soft circle)
   const maskStyle: React.CSSProperties = {
     WebkitMaskImage:
-      "radial-gradient(closest-side, rgba(0,0,0,1) 62%, rgba(0,0,0,0.7) 76%, rgba(0,0,0,0.35) 86%, rgba(0,0,0,0.0) 100%)",
+      "radial-gradient(farthest-side, rgba(0,0,0,1) 65%, rgba(0,0,0,0.69) 82%, rgba(0,0,0,0.35) 92%, rgba(0,0,0,0) 100%)",
     maskImage:
-      "radial-gradient(closest-side, rgba(0,0,0,1) 62%, rgba(0,0,0,0.7) 76%, rgba(0,0,0,0.35) 86%, rgba(0,0,0,0.0) 100%)",
+      "radial-gradient(farthest-side, rgba(0,0,0,1) 65%, rgba(0,0,0,0.69) 82%, rgba(0,0,0,0.35) 92%, rgba(0,0,0,0) 100%)",
     isolation: "isolate",
+    contain: "paint",
+    transform: "translateZ(0)",
   };
 
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
       <div
-        className="absolute left-1/2 top-1/2 aspect-square -translate-x-1/2 -translate-y-1/2 w-[160vw] sm:w-[120vw] md:w-[88vw] lg:w-[1024px]"
+        className="absolute left-1/2 top-1/2 aspect-square -translate-x-1/2 -translate-y-1/2 w-[160vw] sm:w-[120vw] md:w-[140vw] lg:w-[160vw]"
         style={maskStyle}
       >
         <div style={{ position: "relative", width: "100%", height: "100%" }}>
@@ -87,14 +89,14 @@ const MorphoOrbBaseline: React.FC = () => {
           <div
             className="absolute inset-0"
             style={{
-              background: "hsl(var(--brand) / 0.60)",
+              background: "hsl(var(--brand) / 0.80)",
               mixBlendMode: "color",
             }}
           />
           <div
             className="absolute inset-0"
             style={{
-              background: "hsl(var(--brand-glow) / 0.60)",
+              background: "hsl(var(--brand-glow) / 0.70)",
               mixBlendMode: "saturation",
             }}
           />
@@ -102,7 +104,7 @@ const MorphoOrbBaseline: React.FC = () => {
             className="absolute inset-0"
             style={{
               background:
-                "radial-gradient(58% 58% at 45% 38%, hsl(var(--brand-glow) / 0.42) 0%, transparent 58%), linear-gradient(135deg, hsl(var(--brand) / 0.36) 0%, hsl(var(--brand-glow) / 0.38) 46%, hsl(var(--brand) / 0.30) 100%)",
+                "radial-gradient(58% 58% at 45% 38%, hsl(var(--brand-glow) / 0.42) 0%, transparent 58%)",
               mixBlendMode: "soft-light",
             }}
           />
