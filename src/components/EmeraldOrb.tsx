@@ -3,51 +3,70 @@ import React from "react";
 const EmeraldOrb: React.FC = () => {
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-      <div
-        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[140vw] sm:w-[110vw] md:w-[80vw] lg:w-[960px] aspect-square rounded-full bg-[radial-gradient(40%_40%_at_35%_30%,hsl(var(--brand-glow))_0%,transparent_45%),radial-gradient(55%_55%_at_65%_70%,hsl(var(--brand))_0%,transparent_50%),conic-gradient(from_210deg_at_50%_50%,hsl(var(--brand-accent)/0.25),transparent_22%,hsl(var(--brand-glow)/0.24)_44%,transparent_74%,hsl(var(--brand-accent)/0.25)_100%)] blur-[18px] opacity-95 animate-orb-drift animate-orb-wander motion-reduce:animate-none will-change-transform"
-      />
-      <div
-        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[140vw] sm:w-[110vw] md:w-[80vw] lg:w-[960px] aspect-square rounded-full orb-noise opacity-30 animate-orb-breathe animate-orb-flow animate-grain-shift animate-noise-wobble"
-      />
-      <div
-        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[160vw] sm:w-[120vw] md:w-[90vw] lg:w-[1100px] aspect-square rounded-full opacity-35 mix-blend-screen blur-[14px] animate-orb-swirl bg-[conic-gradient(from_0deg_at_50%_50%,hsl(var(--brand-glow)/0.15)_0deg,transparent_120deg,hsl(var(--brand-accent)/0.12)_240deg,transparent_360deg)]"
-      />
-      <svg className="absolute inset-0 h-full w-full mix-blend-screen opacity-90" aria-hidden>
+      {/* Central SVG-driven blob with masked silhouette and layered fills */}
+      <svg
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[140vw] sm:w-[110vw] md:w-[80vw] lg:w-[960px] aspect-square"
+        viewBox="0 0 1000 1000"
+        aria-hidden
+      >
         <defs>
-          <filter id="morph" x="-50%" y="-50%" width="200%" height="200%" filterUnits="objectBoundingBox">
-            <feTurbulence type="fractalNoise" baseFrequency="0.003" numOctaves="2" seed="3">
-              <animate attributeName="baseFrequency" dur="60s" values="0.003;0.006;0.003" repeatCount="indefinite" />
-              <animate attributeName="seed" dur="45s" values="3;9;3" repeatCount="indefinite" />
+          {/* Smooth morph filter (no seed jitter, gentle frequency + scale) */}
+          <filter id="morphFilter" x="0" y="0" width="1000" height="1000" filterUnits="userSpaceOnUse">
+            <feTurbulence type="fractalNoise" baseFrequency="0.0025" numOctaves="2" seed="4">
+              <animate attributeName="baseFrequency" dur="80s" values="0.002;0.0035;0.002" repeatCount="indefinite" />
             </feTurbulence>
-            <feDisplacementMap in="SourceGraphic" scale="40">
-              <animate attributeName="scale" dur="30s" values="30;60;30" repeatCount="indefinite" />
+            <feDisplacementMap in="SourceGraphic" scale="32">
+              <animate attributeName="scale" dur="90s" values="24;38;28;24" repeatCount="indefinite" />
             </feDisplacementMap>
           </filter>
-          <radialGradient id="g1">
+
+          {/* Luminous fill */}
+          <radialGradient id="blobGlow" cx="350" cy="320" r="520" gradientUnits="userSpaceOnUse">
             <stop offset="0%" stopColor="hsl(var(--brand-glow))" stopOpacity="0.9" />
-            <stop offset="70%" stopColor="hsl(var(--brand))" stopOpacity="0.3" />
+            <stop offset="60%" stopColor="hsl(var(--brand))" stopOpacity="0.35" />
             <stop offset="100%" stopColor="transparent" />
           </radialGradient>
-          <radialGradient id="g2">
-            <stop offset="0%" stopColor="black" stopOpacity="0.6" />
-            <stop offset="60%" stopColor="black" stopOpacity="0" />
+
+          {/* Darker ink fill for depth */}
+          <radialGradient id="blobInk" cx="650" cy="700" r="520" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="hsl(var(--brand-accent))" stopOpacity="0.35" />
+            <stop offset="65%" stopColor="hsl(var(--brand-accent))" stopOpacity="0" />
           </radialGradient>
+
+          {/* Blob silhouette mask (drifting circle distorted by morph filter) */}
+          <mask id="blobMask" x="0" y="0" width="1000" height="1000" maskUnits="userSpaceOnUse">
+            <g filter="url(#morphFilter)">
+              <circle cx="520" cy="500" r="360" fill="#fff">
+                <animate attributeName="cx" dur="61s" values="520;470;530;520" repeatCount="indefinite" />
+                <animate attributeName="cy" dur="47s" values="500;540;460;500" repeatCount="indefinite" />
+                <animate attributeName="r" dur="73s" values="360;330;390;360" repeatCount="indefinite" />
+              </circle>
+            </g>
+          </mask>
         </defs>
-        <g filter="url(#morph)">
-          <circle cx="55%" cy="48%" r="38%" fill="url(#g1)">
-            <animate attributeName="cx" dur="40s" values="55%;45%;58%;52%;55%" repeatCount="indefinite" />
-            <animate attributeName="cy" dur="37s" values="48%;52%;42%;50%;48%" repeatCount="indefinite" />
-            <animate attributeName="r" dur="42s" values="38%;32%;44%;36%;38%" repeatCount="indefinite" />
-          </circle>
-          <circle cx="48%" cy="54%" r="42%" className="mix-blend-multiply" fill="url(#g2)" opacity="0.3">
-            <animate attributeName="cx" dur="52s" values="48%;60%;46%;50%;48%" repeatCount="indefinite" />
-            <animate attributeName="cy" dur="49s" values="54%;46%;58%;50%;54%" repeatCount="indefinite" />
-            <animate attributeName="r" dur="55s" values="42%;30%;50%;36%;42%" repeatCount="indefinite" />
-          </circle>
+
+        {/* Layered content clipped by the blob silhouette */}
+        <g mask="url(#blobMask)">
+          {/* Glow layer (screen-like) */}
+          <g className="mix-blend-screen">
+            <circle cx="500" cy="500" r="520" fill="url(#blobGlow)" opacity="0.95">
+              <animate attributeName="cx" dur="61s" values="500;480;520;500" repeatCount="indefinite" />
+              <animate attributeName="cy" dur="49s" values="500;520;480;500" repeatCount="indefinite" />
+            </circle>
+          </g>
+
+          {/* Ink/shadow layer (multiply) */}
+          <g className="mix-blend-multiply">
+            <circle cx="520" cy="520" r="520" fill="url(#blobInk)" opacity="0.28">
+              <animate attributeName="cx" dur="53s" values="520;560;500;520" repeatCount="indefinite" />
+              <animate attributeName="cy" dur="59s" values="520;480;540;520" repeatCount="indefinite" />
+            </circle>
+          </g>
         </g>
       </svg>
-      
-      <div className="absolute inset-0 bg-[radial-gradient(120%_100%_at_50%_50%,transparent_28%,hsl(var(--foreground)/0.12)_70%,hsl(var(--foreground)/0.2)_100%)]" />
+
+      {/* Soft vignette to seat the orb */}
+      <div className="absolute inset-0 bg-[radial-gradient(120%_100%_at_50%_50%,transparent_30%,hsl(var(--foreground)/0.1)_70%,hsl(var(--foreground)/0.16)_100%)]" />
     </div>
   );
 };
