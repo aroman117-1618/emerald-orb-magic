@@ -58,7 +58,7 @@ const Index = () => {
       <main className="relative z-10">
         {/* About */}
         <section id="about" className="container relative py-20 md:py-28" aria-labelledby="about-title">
-          <div aria-hidden className="pointer-events-none absolute -left-12 -top-6 md:-left-16 md:-top-10 text-primary/25 z-0">
+          <div aria-hidden className="pointer-events-none absolute -left-24 -top-8 md:-left-32 md:-top-12 text-primary/25 z-0">
             <SectionGlyph variant="about" className="h-44 w-44 md:h-56 md:w-56" />
           </div>
           <div className="mx-auto max-w-3xl">
@@ -100,7 +100,7 @@ const Index = () => {
 
         {/* Services */}
         <section id="services" className="container relative py-20 md:py-28" aria-labelledby="services-title">
-          <div aria-hidden className="pointer-events-none absolute -left-12 -top-6 md:-left-16 md:-top-10 text-primary/20 z-0">
+          <div aria-hidden className="pointer-events-none absolute -left-24 -top-8 md:-left-32 md:-top-12 text-primary/20 z-0">
             <SectionGlyph variant="services" className="h-44 w-44 md:h-56 md:w-56" />
           </div>
           <div className="mx-auto max-w-3xl">
@@ -146,7 +146,7 @@ const Index = () => {
 
         {/* Impact */}
         <section id="impact" className="container relative py-20 md:py-28" aria-labelledby="impact-title">
-          <div aria-hidden className="pointer-events-none absolute -left-12 -top-6 md:-left-16 md:-top-10 text-primary/20 z-0">
+          <div aria-hidden className="pointer-events-none absolute -left-24 -top-8 md:-left-32 md:-top-12 text-primary/20 z-0">
             <SectionGlyph variant="impact" className="h-44 w-44 md:h-56 md:w-56" />
           </div>
           <div className="mx-auto max-w-3xl">
