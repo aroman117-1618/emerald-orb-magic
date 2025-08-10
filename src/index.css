@@ -135,7 +135,7 @@ All colors MUST be HSL.
   }
   .animate-orb-drift { animation: orb-drift 14s ease-in-out infinite alternate; }
   .animate-orb-breathe { animation: orb-breathe 0.1s ease-in-out infinite; }
-  .animate-orb-flow { animation: orb-flow 0.5s ease-in-out infinite; }
+  .animate-orb-flow { animation: orb-flow 1.5s ease-in-out infinite; }
   .orb-noise {
     background-image:
       radial-gradient(70% 70% at 50% 50%, hsl(var(--brand-glow) / 0.48) 0%, hsl(var(--brand) / 0.34) 36%, transparent 56%),
@@ -145,7 +145,22 @@ All colors MUST be HSL.
     filter: blur(6px) saturate(1.35) contrast(1.35);
     opacity: 1;
   }
+  @keyframes orb-swirl { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  @keyframes orb-wander {
+    0% { transform: translate(-50%, -50%) translate3d(0,0,0); }
+    33% { transform: translate(-50%, -50%) translate3d(10px,-6px,0); }
+    66% { transform: translate(-50%, -50%) translate3d(-8px,8px,0); }
+    100% { transform: translate(-50%, -50%) translate3d(4px,-10px,0); }
+  }
+  @keyframes grain-shift {
+    0% { background-position: 0 0, 0 0, 0 0; }
+    100% { background-position: 12px -10px, -14px 16px, 10px 8px; }
+  }
+  .animate-orb-swirl { animation: orb-swirl 67s linear infinite; }
+  .animate-orb-wander { animation: orb-wander 31s ease-in-out infinite alternate; }
+  .animate-grain-shift { animation: grain-shift 2.7s steps(60) infinite; }
 }
+
 
 @layer components {
   .glass-panel {

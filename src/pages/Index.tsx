@@ -58,8 +58,8 @@ const Index = () => {
       <main className="relative z-10">
         {/* About */}
         <section id="about" className="container relative py-20 md:py-28" aria-labelledby="about-title">
-          <div aria-hidden className="pointer-events-none absolute -left-6 -top-10 text-primary/25">
-            <SectionGlyph variant="about" className="h-40 w-40" />
+          <div aria-hidden className="pointer-events-none absolute -left-12 -top-6 md:-left-16 md:-top-10 text-primary/25 z-0">
+            <SectionGlyph variant="about" className="h-44 w-44 md:h-56 md:w-56" />
           </div>
           <div className="mx-auto max-w-3xl">
             <p className="text-xs tracking-[0.2em] text-muted-foreground">ABOUT</p>
@@ -100,8 +100,8 @@ const Index = () => {
 
         {/* Services */}
         <section id="services" className="container relative py-20 md:py-28" aria-labelledby="services-title">
-          <div aria-hidden className="pointer-events-none absolute -left-6 -top-10 text-primary/20">
-            <SectionGlyph variant="services" className="h-40 w-40" />
+          <div aria-hidden className="pointer-events-none absolute -left-12 -top-6 md:-left-16 md:-top-10 text-primary/20 z-0">
+            <SectionGlyph variant="services" className="h-44 w-44 md:h-56 md:w-56" />
           </div>
           <div className="mx-auto max-w-3xl">
             <p className="text-xs tracking-[0.2em] text-muted-foreground">SERVICES</p>
@@ -146,8 +146,8 @@ const Index = () => {
 
         {/* Impact */}
         <section id="impact" className="container relative py-20 md:py-28" aria-labelledby="impact-title">
-          <div aria-hidden className="pointer-events-none absolute -left-6 -top-10 text-primary/20">
-            <SectionGlyph variant="impact" className="h-40 w-40" />
+          <div aria-hidden className="pointer-events-none absolute -left-12 -top-6 md:-left-16 md:-top-10 text-primary/20 z-0">
+            <SectionGlyph variant="impact" className="h-44 w-44 md:h-56 md:w-56" />
           </div>
           <div className="mx-auto max-w-3xl">
             <p className="text-xs tracking-[0.2em] text-muted-foreground">IMPACT</p>
