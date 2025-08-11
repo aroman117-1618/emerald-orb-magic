@@ -33,6 +33,14 @@ export type AuroraBackgroundProps = {
   bandWidthMax?: number;    // max normalized half-width of band
   bandDriftSpeed?: number;  // band width/offset modulation speed
   bandCurvature?: number;   // subtle curvature amount
+  // Branch controls
+  branchCount?: number;         // 0-5 number of connected branches
+  branchSpread?: number;        // radians: max angular deviation from main band
+  branchStrength?: number;      // 0..1 intensity of branches vs main band
+  branchWidthFactor?: number;   // width multiplier for branches
+  branchAttach?: number;        // 0..1 additional offset amplitude from main band
+  branchJitter?: number;        // 0..1 random wobble amount
+  branchSeed?: number;          // randomization seed
   // Look controls
   saturation?: number;      // 0..1 (1 = full saturation)
   gamma?: number;           // >0, tone response
@@ -47,7 +55,7 @@ const DEFAULT_PROPS: Required<AuroraBackgroundProps> = {
     indigo: "#0E1B2E",  // deep indigo/blue
   },
   intensity: 0.75,
-  speed: 28.8, // +500% from current (x6) for very fast motion
+  speed: 17.28, // ~40% slower than 28.8 for smoother motion
   shimmer: 0.08,
   backgroundColor: "#02050A",
   starIntensity: 0.28,
@@ -56,8 +64,16 @@ const DEFAULT_PROPS: Required<AuroraBackgroundProps> = {
   bandAngle: -0.45,
   bandWidthMin: 0.15, // half-width => ~30% full coverage at min
   bandWidthMax: 0.30, // half-width => ~60% full coverage at max
-  bandDriftSpeed: 1.44, // +500% from current (x6) for rapid band modulation
+  bandDriftSpeed: 1.44, // keep fast band modulation
   bandCurvature: 0.15,
+  // Branch defaults
+  branchCount: 4,
+  branchSpread: 0.7,
+  branchStrength: 0.8,
+  branchWidthFactor: 0.6,
+  branchAttach: 0.35,
+  branchJitter: 0.25,
+  branchSeed: 12.34,
   saturation: 0.9,
   gamma: 1.1,
 };
@@ -127,6 +143,15 @@ const FRAG = /* glsl */ `
   uniform float u_bandDriftSpeed;
   uniform float u_bandCurvature;
 
+  // Branch uniforms
+  uniform float u_branchCount;
+  uniform float u_branchSpread;
+  uniform float u_branchStrength;
+  uniform float u_branchWidthFactor;
+  uniform float u_branchAttach;
+  uniform float u_branchJitter;
+  uniform float u_branchSeed;
+
   // Look controls
   uniform float u_saturation;
   uniform float u_gamma;
@@ -161,6 +186,13 @@ const FRAG = /* glsl */ `
   }
 
   mat2 rot(float a){ return mat2(cos(a), -sin(a), sin(a), cos(a)); }
+
+  float bandMaskAt(vec2 p, float angle, float offset, float width, float curvature, float timePhase){
+    vec2 rp = rot(angle) * (p + vec2(0.0, offset));
+    float curve = curvature * sin(rp.x * 2.2 + timePhase);
+    float dist = abs(rp.y - curve);
+    return 1.0 - smoothstep(0.0, width, dist);
+  }
 
   void main(){
     vec2 uv = vUv; // 0..1
@@ -204,13 +236,40 @@ const FRAG = /* glsl */ `
 
     // Band/ribbon mask to constrain coverage 30-60%
     float bandOffset = 0.15 * sin(u_time * u_bandDriftSpeed);
-    vec2 rp = rot(u_bandAngle) * (p + vec2(0.0, bandOffset));
     float width = mix(u_bandWidthMin, u_bandWidthMax, 0.5 + 0.5 * sin(u_time * u_bandDriftSpeed * 0.8));
-    float curve = u_bandCurvature * sin(rp.x * 2.2 + u_time * 0.05);
-    float bandDist = abs(rp.y - curve);
-    float bandMask = 1.0 - smoothstep(0.0, width, bandDist);
 
-    // Final aurora mask including band
+    // Main band
+    float mainBandMask = bandMaskAt(p, u_bandAngle, bandOffset, width, u_bandCurvature, u_time * 0.05);
+
+    // Branches: 0-5 connected ribbons with irregular motion
+    float branches = 0.0;
+    int count = int(min(max(u_branchCount, 0.0), 5.0));
+    for(int i=0;i<5;i++){
+      if(i >= count) break;
+      float fi = float(i);
+      float denom = max(float(count - 1), 1.0);
+      float frac = fi / denom;          // 0..1
+      float signed = frac * 2.0 - 1.0;  // -1..1 across branch set
+
+      float seed = u_branchSeed + fi * 23.17;
+      float phase = 0.6 + 0.4 * fract(sin(seed) * 43758.5453);
+      float jitter = (noise(vec2(seed, t*0.2)) - 0.5) * 2.0 * u_branchJitter;
+
+      float angle = u_bandAngle + signed * u_branchSpread + jitter * 0.3;
+
+      float attach = u_branchAttach * (0.5 + 0.5 * sin(t * phase + seed));
+      float offset = bandOffset + attach * (0.5 + 0.5 * sin(t * u_bandDriftSpeed * 0.7 + seed));
+
+      float bWidth = max(1e-3, width * u_branchWidthFactor);
+      float bCurve = u_bandCurvature * (0.7 + 0.4 * sin(seed));
+
+      float mask = bandMaskAt(p, angle, offset, bWidth, bCurve, u_time * 0.05 + seed);
+      branches = max(branches, mask);
+    }
+
+    float bandMask = max(mainBandMask, branches * u_branchStrength);
+
+    // Final aurora mask including band and branches
     float auroraMask = brightness * bandMask;
     auroraMask = pow(clamp(auroraMask, 0.0, 1.0), 1.15);
 
@@ -254,6 +313,7 @@ const FRAG = /* glsl */ `
 `;
 
 
+
 // React Three Fiber node rendering the shader on a full-screen quad
 function AuroraQuad({
   uniforms,
@@ -278,6 +338,13 @@ function AuroraQuad({
     u_bandWidthMax: { value: number };
     u_bandDriftSpeed: { value: number };
     u_bandCurvature: { value: number };
+    u_branchCount: { value: number };
+    u_branchSpread: { value: number };
+    u_branchStrength: { value: number };
+    u_branchWidthFactor: { value: number };
+    u_branchAttach: { value: number };
+    u_branchJitter: { value: number };
+    u_branchSeed: { value: number };
     u_saturation: { value: number };
     u_gamma: { value: number };
   };
@@ -344,6 +411,13 @@ export default function AuroraBackground(props: AuroraBackgroundProps = {}) {
     u_bandWidthMax: { value: cfg.bandWidthMax },
     u_bandDriftSpeed: { value: cfg.bandDriftSpeed },
     u_bandCurvature: { value: cfg.bandCurvature },
+    u_branchCount: { value: cfg.branchCount },
+    u_branchSpread: { value: cfg.branchSpread },
+    u_branchStrength: { value: cfg.branchStrength },
+    u_branchWidthFactor: { value: cfg.branchWidthFactor },
+    u_branchAttach: { value: cfg.branchAttach },
+    u_branchJitter: { value: cfg.branchJitter },
+    u_branchSeed: { value: cfg.branchSeed },
     u_saturation: { value: cfg.saturation },
     u_gamma: { value: cfg.gamma },
   }).current;
