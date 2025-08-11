@@ -24,6 +24,10 @@ export type AuroraBackgroundProps = {
   centerBias?: number;    // 0.0 - 2.0 strength of center glow bias
   pulseStrength?: number; // 0.2 - 2.0 click pulse brightness
   pulseDecay?: number;    // 0.2 - 2.0 click pulse fade rate
+  backgroundColor?: string; // deep night-sky base
+  starIntensity?: number;   // 0.0 - 1.0 star brightness
+  starDensity?: number;     // 0.0 - 1.0 star density
+  overlayAmount?: number;   // 0.0 - 1.0 aurora overlay strength
 };
 
 const DEFAULT_PROPS: Required<AuroraBackgroundProps> = {
@@ -32,12 +36,16 @@ const DEFAULT_PROPS: Required<AuroraBackgroundProps> = {
     accent: "#1ec6a3", // turquoise
     cold: "#80d0ff",   // icy blue
   },
-  intensity: 1.0,
-  speed: 0.7,
-  shimmer: 0.2,
-  centerBias: 0.9,
+  intensity: 0.9,
+  speed: 0.65,
+  shimmer: 0.15,
+  centerBias: 0.7,
   pulseStrength: 0.9,
   pulseDecay: 0.9,
+  backgroundColor: "#050B12",
+  starIntensity: 0.35,
+  starDensity: 0.35,
+  overlayAmount: 0.9,
 };
 
 // Utility: detect WebGL support
@@ -92,10 +100,15 @@ const FRAG = /* glsl */ `
   uniform vec3 u_baseColor;
   uniform vec3 u_accentColor;
   uniform vec3 u_coldColor;
+  uniform vec3 u_bgColor;
 
   uniform int u_pulseCount;
   uniform vec2 u_pulsePos[${MAX_PULSES}];
   uniform float u_pulseTime[${MAX_PULSES}];
+
+  uniform float u_starIntensity;
+  uniform float u_starDensity;
+  uniform float u_overlayAmount;
 
   // Hash / Noise Utilities (iq style)
   float hash(vec2 p){
@@ -163,13 +176,13 @@ const FRAG = /* glsl */ `
 
     // Sample the field along flow for soft banding
     float bands = 0.0;
-    float steps = 6.0;
-    float amp = 0.6;
+    float steps = 5.0;
+    float amp = 0.5;
     vec2 sp = p;
     for(int i=0;i<12;i++){
       if(float(i) >= steps) break;
       float ff = fbm(sp + r*0.7 + flow*(t*0.08));
-      bands += amp * smoothstep(0.35, 1.0, ff);
+      bands += amp * smoothstep(0.38, 1.0, ff);
       sp += (r*0.25 + flow*0.08) * (1.0 + 0.5*sin(t*0.3 + float(i)));
       amp *= 0.7;
     }
@@ -193,19 +206,37 @@ const FRAG = /* glsl */ `
       pulse += g;
     }
 
+    // Combined brightness
     float brightness = clamp(bands + centerGlow + pulse*0.9 + spark*0.5, 0.0, 1.6);
     brightness = pow(brightness, 1.0 + 0.5*(1.0/u_intensity - 1.0));
 
-    // Color mapping
-    vec3 col = mix(u_coldColor, u_baseColor, smoothstep(0.0, 1.0, brightness));
-    col = mix(col, u_accentColor, smoothstep(0.6, 1.2, brightness));
+    // Aurora mask keeps most pixels near the dark background
+    float auroraMask = smoothstep(0.38, 0.9, brightness);
 
-    // Gentle vignette
+    // Color mapping: greens core with cyan fringe at high brightness
+    vec3 core = mix(u_bgColor, u_baseColor, smoothstep(0.15, 0.75, brightness));
+    vec3 aur  = mix(core, u_accentColor, smoothstep(0.65, 1.15, brightness));
+
+    // Sparse starfield behind aurora
+    vec2 grid = floor(uv * res * 1.25);
+    float starSeed = hash(grid);
+    float twinkle = 0.5 + 0.5*sin(u_time*3.0 + starSeed*50.0);
+    float density = mix(0.9995, 0.997, clamp(u_starDensity, 0.0, 1.0));
+    float star = step(density, starSeed) * twinkle * u_starIntensity;
+    star *= (1.0 - auroraMask); // stars are subdued under bright ribbons
+
+    // Compose deep night background + subtle stars
+    vec3 bg = u_bgColor + star * u_coldColor * 0.6;
+
+    // Gentle vignette on final composite
     float vig = smoothstep(1.2, 0.2, length(p));
-    col *= mix(0.85, 1.05, vig);
+
+    // Composite aurora over the background
+    vec3 col = mix(bg, aur, auroraMask * u_overlayAmount);
+    col *= mix(0.82, 1.05, vig);
 
     // Final tone tweak
-    col = 1.0 - exp(-col * 1.2);
+    col = 1.0 - exp(-col * 1.1);
 
     gl_FragColor = vec4(col, 1.0);
   }
@@ -226,9 +257,13 @@ function AuroraQuad({
     u_baseColor: { value: THREE.Vector3 };
     u_accentColor: { value: THREE.Vector3 };
     u_coldColor: { value: THREE.Vector3 };
+    u_bgColor: { value: THREE.Vector3 };
     u_pulseCount: { value: number };
     u_pulsePos: { value: THREE.Vector2[] };
     u_pulseTime: { value: number[] };
+    u_starIntensity: { value: number };
+    u_starDensity: { value: number };
+    u_overlayAmount: { value: number };
   };
 }) {
   const matRef = useRef<THREE.ShaderMaterial>(null!);
@@ -274,6 +309,7 @@ export default function AuroraBackground(props: AuroraBackgroundProps = {}) {
   const base = useMemo(() => new THREE.Vector3(...hexToRGB(cfg.colors.base)), [cfg.colors.base]);
   const accent = useMemo(() => new THREE.Vector3(...hexToRGB(cfg.colors.accent)), [cfg.colors.accent]);
   const cold = useMemo(() => new THREE.Vector3(...hexToRGB(cfg.colors.cold)), [cfg.colors.cold]);
+  const bgNight = useMemo(() => new THREE.Vector3(...hexToRGB(cfg.backgroundColor)), [cfg.backgroundColor]);
 
   // Uniform objects kept stable between renders
   const uniforms = useRef({
@@ -287,9 +323,13 @@ export default function AuroraBackground(props: AuroraBackgroundProps = {}) {
     u_baseColor: { value: base },
     u_accentColor: { value: accent },
     u_coldColor: { value: cold },
+    u_bgColor: { value: bgNight },
     u_pulseCount: { value: 0 },
     u_pulsePos: { value: pulsePos.current },
     u_pulseTime: { value: pulseTime.current },
+    u_starIntensity: { value: cfg.starIntensity },
+    u_starDensity: { value: cfg.starDensity },
+    u_overlayAmount: { value: cfg.overlayAmount },
   }).current;
 
   // Global mouse/touch listeners controlling uniforms (works even with pointer-events none)
