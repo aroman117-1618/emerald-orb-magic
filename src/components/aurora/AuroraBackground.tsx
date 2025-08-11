@@ -47,16 +47,16 @@ const DEFAULT_PROPS: Required<AuroraBackgroundProps> = {
     indigo: "#0E1B2E",  // deep indigo/blue
   },
   intensity: 0.75,
-  speed: 0.35, // slower base motion; shader time also halved again
+  speed: 1.2, // increased for more pronounced motion
   shimmer: 0.08,
   backgroundColor: "#02050A",
   starIntensity: 0.28,
   starDensity: 0.25,
   overlayAmount: 0.75,
   bandAngle: -0.45,
-  bandWidthMin: 0.22,
-  bandWidthMax: 0.45,
-  bandDriftSpeed: 0.03,
+  bandWidthMin: 0.15, // half-width => ~30% full coverage at min
+  bandWidthMax: 0.30, // half-width => ~60% full coverage at max
+  bandDriftSpeed: 0.06, // slightly faster band modulation
   bandCurvature: 0.15,
   saturation: 0.9,
   gamma: 1.1,
