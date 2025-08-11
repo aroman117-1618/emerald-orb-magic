@@ -64,7 +64,7 @@ const DEFAULT_PROPS: Required<AuroraBackgroundProps> = {
   bandAngle: -0.45,
   bandWidthMin: 0.15, // half-width => ~30% full coverage at min
   bandWidthMax: 0.30, // half-width => ~60% full coverage at max
-  bandDriftSpeed: 0.432, // 70% slower drift
+  bandDriftSpeed: 0.1728, // additional 60% slower drift
   bandCurvature: 0.15,
   // Branch defaults
   branchCount: 4,
