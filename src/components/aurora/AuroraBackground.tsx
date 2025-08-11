@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { AdaptiveDpr, PerformanceMonitor, OrthographicCamera } from "@react-three/drei";
 import * as THREE from "three";
@@ -6,7 +6,7 @@ import * as THREE from "three";
 // AuroraBackground
 // - Fullscreen, fixed WebGL canvas rendering a procedurally animated aurora using a shader
 // - Organic, non-repeating motion via domain-warped fbm and time warping
-// - Interactivity: hover flow influence and click/tap pulses that radiate and blend naturally
+// - Non-interactive: free-floating, smoke-like motion with subtle stars
 // - Performance: single fullscreen quad, adaptive DPR
 // - Accessibility: respects prefers-reduced-motion and falls back to static gradient if no WebGL
 
@@ -14,6 +14,8 @@ export type AuroraColors = {
   base?: string;   // deep emerald/green
   accent?: string; // teal/turquoise highlight
   cold?: string;   // icy blue for cool accents
+  purple?: string; // aurora violet
+  indigo?: string; // deep blue-indigo
 };
 
 export type AuroraBackgroundProps = {
@@ -21,9 +23,6 @@ export type AuroraBackgroundProps = {
   intensity?: number;     // 0.0 - 2.0 overall brightness/contrast
   speed?: number;         // 0.2 - 2.0 base motion speed
   shimmer?: number;       // 0.0 - 1.0 subtle sparkle
-  centerBias?: number;    // 0.0 - 2.0 strength of center glow bias
-  pulseStrength?: number; // 0.2 - 2.0 click pulse brightness
-  pulseDecay?: number;    // 0.2 - 2.0 click pulse fade rate
   backgroundColor?: string; // deep night-sky base
   starIntensity?: number;   // 0.0 - 1.0 star brightness
   starDensity?: number;     // 0.0 - 1.0 star density
@@ -32,16 +31,15 @@ export type AuroraBackgroundProps = {
 
 const DEFAULT_PROPS: Required<AuroraBackgroundProps> = {
   colors: {
-    base: "#0b7a4b",   // deep emerald
-    accent: "#1ec6a3", // turquoise
-    cold: "#80d0ff",   // icy blue
+    base: "#0b7a4b",    // deep emerald
+    accent: "#1ec6a3",  // turquoise
+    cold: "#80d0ff",    // icy blue
+    purple: "#7B5CF7",  // aurora violet
+    indigo: "#1F3A8A",  // deep indigo
   },
   intensity: 0.9,
-  speed: 0.65,
-  shimmer: 0.15,
-  centerBias: 0.7,
-  pulseStrength: 0.9,
-  pulseDecay: 0.9,
+  speed: 0.65, // we also halve time in shader => overall ~50% slower
+  shimmer: 0.12,
   backgroundColor: "#050B12",
   starIntensity: 0.35,
   starDensity: 0.35,
@@ -82,7 +80,7 @@ const VERT = /* glsl */ `
   }
 `;
 
-const MAX_PULSES = 6;
+
 
 const FRAG = /* glsl */ `
   precision highp float;
@@ -90,21 +88,17 @@ const FRAG = /* glsl */ `
 
   uniform vec2 u_resolution;
   uniform float u_time;
-  uniform vec2 u_pointer; // 0..1
 
   uniform float u_speed;
   uniform float u_intensity;
   uniform float u_shimmer;
-  uniform float u_centerBias;
 
   uniform vec3 u_baseColor;
   uniform vec3 u_accentColor;
   uniform vec3 u_coldColor;
+  uniform vec3 u_purpleColor;
+  uniform vec3 u_indigoColor;
   uniform vec3 u_bgColor;
-
-  uniform int u_pulseCount;
-  uniform vec2 u_pulsePos[${MAX_PULSES}];
-  uniform float u_pulseTime[${MAX_PULSES}];
 
   uniform float u_starIntensity;
   uniform float u_starDensity;
@@ -139,10 +133,6 @@ const FRAG = /* glsl */ `
     return v;
   }
 
-  vec3 palette(float t, vec3 a, vec3 b, vec3 c, vec3 d){
-    return a + b*cos(6.28318*(c*t + d));
-  }
-
   void main(){
     vec2 uv = vUv; // 0..1
 
@@ -151,71 +141,53 @@ const FRAG = /* glsl */ `
     float ar = res.x / res.y;
     vec2 p = (uv - 0.5) * vec2(ar, 1.0);
 
-    // Breathing and slow drift
-    float breath = 0.35 + 0.25 * sin(u_time * 0.3);
-    float drift = 0.15 * sin(u_time * 0.07);
+    // Slow global time (50% slower overall)
+    float t = u_time * (0.25 + u_speed*0.75) * 0.5;
 
-    // Pointer influence (slight pull towards pointer)
-    vec2 pt = (u_pointer - 0.5) * vec2(ar, 1.0);
-    vec2 influenceDir = normalize(pt - p + 1e-4);
-
-    // Domain-warped fbm flow field
-    float t = u_time * (0.25 + u_speed*0.75) * (0.8 + 0.2*sin(u_time*0.11));
+    // Domain-warped coordinates for organic motion
     vec2 q = vec2(
-      fbm(p*1.5 + vec2(0.0, t*0.15 + drift)),
-      fbm(p*1.5 + vec2(5.2, -t*0.12 + drift))
+      fbm(p*1.4 + vec2(0.0, t*0.12)),
+      fbm(p*1.4 + vec2(5.2, -t*0.09))
     );
     vec2 r = vec2(
-      fbm(p*2.3 + 4.0*q + vec2(1.7, 9.2)),
-      fbm(p*2.3 + 4.0*q + vec2(8.3, 2.8))
+      fbm(p*2.2 + 3.5*q + vec2(1.7, 9.2)),
+      fbm(p*2.2 + 3.5*q + vec2(8.3, 2.8))
     );
 
-    // Flow direction biased to center and pointer
-    vec2 centerDir = normalize(-p + 1e-4);
-    vec2 flow = normalize(0.6*centerDir + 0.4*influenceDir);
+    // Ridged/turbulent fbm to get smoke-like wisps
+    float nA = fbm(p*1.2 + r*0.5 + vec2(0.0, t*0.05));
+    float nB = fbm((p + q*0.75)*2.0 - vec2(t*0.02, t*0.015));
+    float ridged = 1.0 - abs(2.0*nA - 1.0);
+    float flow    = 1.0 - abs(2.0*nB - 1.0);
+    float smoke = clamp(0.6*ridged + 0.4*flow, 0.0, 1.0);
 
-    // Sample the field along flow for soft banding
-    float bands = 0.0;
-    float steps = 5.0;
-    float amp = 0.5;
-    vec2 sp = p;
-    for(int i=0;i<12;i++){
-      if(float(i) >= steps) break;
-      float ff = fbm(sp + r*0.7 + flow*(t*0.08));
-      bands += amp * smoothstep(0.38, 1.0, ff);
-      sp += (r*0.25 + flow*0.08) * (1.0 + 0.5*sin(t*0.3 + float(i)));
-      amp *= 0.7;
-    }
+    // Additional wisping along a curl-like direction
+    vec2 dir = normalize(vec2(r.y, -r.x) + 1e-3);
+    float wisp = fbm(p + dir*(t*0.04) + q*0.3);
+    smoke = mix(smoke, wisp, 0.3);
 
-    // Shimmer (high frequency)
-    float spark = u_shimmer * (0.3 + 0.7*noise(p*10.0 + r*2.0 + t*0.5));
+    // Subtle sparkle
+    float spark = u_shimmer * (0.25 + 0.75*noise(p*8.0 + r*1.5 + t*0.3));
 
-    // Center bias glow
-    float cdist = length(p);
-    float centerGlow = exp(-3.0 * cdist) * (0.6 + 0.4*breath) * u_centerBias;
-
-    // Pulses from clicks
-    float pulse = 0.0;
-    for(int i=0;i<${MAX_PULSES}; i++){
-      if(i >= u_pulseCount) break;
-      vec2 pos = u_pulsePos[i];
-      float age = max(0.0, u_time - u_pulseTime[i]);
-      float r0 = 0.02 + age*0.35; // expanding radius
-      float d = distance(uv, pos);
-      float g = exp(-8.0 * pow(d/(r0+1e-4), 2.0)) * exp(-1.2*age);
-      pulse += g;
-    }
-
-    // Combined brightness
-    float brightness = clamp(bands + centerGlow + pulse*0.9 + spark*0.5, 0.0, 1.6);
+    // Brightness from smoke, with intensity mapping
+    float brightness = clamp(smoothstep(0.25, 0.95, smoke) + spark*0.4, 0.0, 1.0);
     brightness = pow(brightness, 1.0 + 0.5*(1.0/u_intensity - 1.0));
 
-    // Aurora mask keeps most pixels near the dark background
-    float auroraMask = smoothstep(0.38, 0.9, brightness);
+    // Mask for compositing
+    float auroraMask = brightness;
 
-    // Color mapping: greens core with cyan fringe at high brightness
-    vec3 core = mix(u_bgColor, u_baseColor, smoothstep(0.15, 0.75, brightness));
-    vec3 aur  = mix(core, u_accentColor, smoothstep(0.65, 1.15, brightness));
+    // Multi-stop color palette: indigo -> purple -> blue -> teal -> green
+    float h = auroraMask;
+    vec3 c0 = u_indigoColor;
+    vec3 c1 = u_purpleColor;
+    vec3 c2 = u_coldColor;
+    vec3 c3 = u_accentColor;
+    vec3 c4 = u_baseColor;
+
+    vec3 aur = mix(c0, c1, smoothstep(0.05, 0.30, h));
+    aur = mix(aur, c2, smoothstep(0.20, 0.55, h));
+    aur = mix(aur, c3, smoothstep(0.45, 0.80, h));
+    aur = mix(aur, c4, smoothstep(0.70, 1.00, h));
 
     // Sparse starfield behind aurora
     vec2 grid = floor(uv * res * 1.25);
@@ -223,19 +195,19 @@ const FRAG = /* glsl */ `
     float twinkle = 0.5 + 0.5*sin(u_time*3.0 + starSeed*50.0);
     float density = mix(0.9995, 0.997, clamp(u_starDensity, 0.0, 1.0));
     float star = step(density, starSeed) * twinkle * u_starIntensity;
-    star *= (1.0 - auroraMask); // stars are subdued under bright ribbons
+    star *= (1.0 - auroraMask); // stars are subdued under bright smoke
 
     // Compose deep night background + subtle stars
-    vec3 bg = u_bgColor + star * u_coldColor * 0.6;
+    vec3 bg = u_bgColor + star * c2 * 0.6;
 
-    // Gentle vignette on final composite
-    float vig = smoothstep(1.2, 0.2, length(p));
+    // Gentle vignette to avoid hard edges (not a strong center bias)
+    float vig = smoothstep(1.25, 0.25, length(p));
 
     // Composite aurora over the background
     vec3 col = mix(bg, aur, auroraMask * u_overlayAmount);
-    col *= mix(0.82, 1.05, vig);
+    col *= mix(0.85, 1.05, vig);
 
-    // Final tone tweak
+    // Filmic tone tweak
     col = 1.0 - exp(-col * 1.1);
 
     gl_FragColor = vec4(col, 1.0);
@@ -249,18 +221,15 @@ function AuroraQuad({
   uniforms: {
     u_time: { value: number };
     u_resolution: { value: THREE.Vector2 };
-    u_pointer: { value: THREE.Vector2 };
     u_speed: { value: number };
     u_intensity: { value: number };
     u_shimmer: { value: number };
-    u_centerBias: { value: number };
     u_baseColor: { value: THREE.Vector3 };
     u_accentColor: { value: THREE.Vector3 };
     u_coldColor: { value: THREE.Vector3 };
+    u_purpleColor: { value: THREE.Vector3 };
+    u_indigoColor: { value: THREE.Vector3 };
     u_bgColor: { value: THREE.Vector3 };
-    u_pulseCount: { value: number };
-    u_pulsePos: { value: THREE.Vector2[] };
-    u_pulseTime: { value: number[] };
     u_starIntensity: { value: number };
     u_starDensity: { value: number };
     u_overlayAmount: { value: number };
@@ -299,83 +268,32 @@ export default function AuroraBackground(props: AuroraBackgroundProps = {}) {
 
   const webglSupported = useMemo(() => (typeof window !== "undefined" ? hasWebGL() : false), []);
 
-  // Interactive state (stored in uniforms via refs)
-  const pointer = useRef(new THREE.Vector2(0.5, 0.5));
-  const pulsePos = useRef<THREE.Vector2[]>(Array(MAX_PULSES).fill(0).map(() => new THREE.Vector2(0.5, 0.5)));
-  const pulseTime = useRef<number[]>(new Array(MAX_PULSES).fill(-1000)); // negative ages => inactive
-  const pulseCount = useRef(0);
-
   // Colors as linear RGB vectors
   const base = useMemo(() => new THREE.Vector3(...hexToRGB(cfg.colors.base)), [cfg.colors.base]);
   const accent = useMemo(() => new THREE.Vector3(...hexToRGB(cfg.colors.accent)), [cfg.colors.accent]);
   const cold = useMemo(() => new THREE.Vector3(...hexToRGB(cfg.colors.cold)), [cfg.colors.cold]);
+  const purple = useMemo(() => new THREE.Vector3(...hexToRGB(cfg.colors.purple)), [cfg.colors.purple]);
+  const indigo = useMemo(() => new THREE.Vector3(...hexToRGB(cfg.colors.indigo)), [cfg.colors.indigo]);
   const bgNight = useMemo(() => new THREE.Vector3(...hexToRGB(cfg.backgroundColor)), [cfg.backgroundColor]);
 
   // Uniform objects kept stable between renders
   const uniforms = useRef({
     u_time: { value: 0 },
     u_resolution: { value: new THREE.Vector2(1, 1) },
-    u_pointer: { value: pointer.current },
     u_speed: { value: cfg.speed },
     u_intensity: { value: cfg.intensity },
     u_shimmer: { value: cfg.shimmer },
-    u_centerBias: { value: cfg.centerBias },
     u_baseColor: { value: base },
     u_accentColor: { value: accent },
     u_coldColor: { value: cold },
+    u_purpleColor: { value: purple },
+    u_indigoColor: { value: indigo },
     u_bgColor: { value: bgNight },
-    u_pulseCount: { value: 0 },
-    u_pulsePos: { value: pulsePos.current },
-    u_pulseTime: { value: pulseTime.current },
     u_starIntensity: { value: cfg.starIntensity },
     u_starDensity: { value: cfg.starDensity },
     u_overlayAmount: { value: cfg.overlayAmount },
   }).current;
 
-  // Global mouse/touch listeners controlling uniforms (works even with pointer-events none)
-  useEffect(() => {
-    function setPointer(x: number, y: number) {
-      pointer.current.set(x, y);
-    }
-    function handleMove(e: MouseEvent) {
-      const x = e.clientX / window.innerWidth;
-      const y = e.clientY / window.innerHeight;
-      setPointer(x, y);
-    }
-    function handleTouchMove(e: TouchEvent) {
-      if (!e.touches[0]) return;
-      const t = e.touches[0];
-      const x = t.clientX / window.innerWidth;
-      const y = t.clientY / window.innerHeight;
-      setPointer(x, y);
-    }
-    function handlePulse(eX: number, eY: number) {
-      const i = pulseCount.current % MAX_PULSES;
-      pulsePos.current[i] = new THREE.Vector2(eX, eY);
-      pulseTime.current[i] = performance.now() / 1000.0; // seconds
-      pulseCount.current += 1;
-      uniforms.u_pulseCount.value = Math.min(pulseCount.current, MAX_PULSES);
-    }
-    function handleClick(e: MouseEvent) {
-      handlePulse(e.clientX / window.innerWidth, e.clientY / window.innerHeight);
-    }
-    function handleTouchStart(e: TouchEvent) {
-      if (!e.touches[0]) return;
-      const t = e.touches[0];
-      handlePulse(t.clientX / window.innerWidth, t.clientY / window.innerHeight);
-    }
-
-    window.addEventListener("mousemove", handleMove, { passive: true });
-    window.addEventListener("touchmove", handleTouchMove, { passive: true });
-    window.addEventListener("mousedown", handleClick, { passive: true });
-    window.addEventListener("touchstart", handleTouchStart, { passive: true });
-    return () => {
-      window.removeEventListener("mousemove", handleMove as any);
-      window.removeEventListener("touchmove", handleTouchMove as any);
-      window.removeEventListener("mousedown", handleClick as any);
-      window.removeEventListener("touchstart", handleTouchStart as any);
-    };
-  }, [uniforms]);
 
   // Reduced motion or no WebGL: static gradient fallback
   if (prefersReducedMotion || !webglSupported) {
