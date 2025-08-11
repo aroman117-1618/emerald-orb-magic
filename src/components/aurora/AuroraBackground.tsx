@@ -46,19 +46,19 @@ const DEFAULT_PROPS: Required<AuroraBackgroundProps> = {
     purple: "#6B5AE8",  // restrained violet
     indigo: "#0E1B2E",  // deep indigo/blue
   },
-  intensity: 0.75,
-  speed: 0.35, // slower base motion; shader time also halved again
-  shimmer: 0.08,
+  intensity: 0.68,
+  speed: 0.25, // calmer base motion; shader time also reduced
+  shimmer: 0.04,
   backgroundColor: "#02050A",
-  starIntensity: 0.28,
-  starDensity: 0.25,
-  overlayAmount: 0.75,
+  starIntensity: 0.2,
+  starDensity: 0.15,
+  overlayAmount: 0.6,
   bandAngle: -0.45,
-  bandWidthMin: 0.22,
-  bandWidthMax: 0.45,
+  bandWidthMin: 0.12,
+  bandWidthMax: 0.28,
   bandDriftSpeed: 0.03,
   bandCurvature: 0.15,
-  saturation: 0.9,
+  saturation: 0.7,
   gamma: 1.1,
 };
 
@@ -171,12 +171,15 @@ const FRAG = /* glsl */ `
     vec2 p = (uv - 0.5) * vec2(ar, 1.0);
 
     // Even slower global time
-    float t = u_time * (0.25 + u_speed*0.75) * 0.25;
+    float t = u_time * (0.25 + u_speed*0.75) * 0.18;
 
-    // Domain-warped coordinates for organic motion
+    // Global free-floating drift (subtle meander)
+    p += vec2(0.035 * sin(t * 0.15), 0.028 * cos(t * 0.11));
+
+    // Domain-warped coordinates for organic motion (calmer)
     vec2 q = vec2(
-      fbm(p*1.35 + vec2(0.0, t*0.10)),
-      fbm(p*1.35 + vec2(5.2, -t*0.08))
+      fbm(p*1.35 + vec2(0.0, t*0.06)),
+      fbm(p*1.35 + vec2(5.2, -t*0.05))
     );
     vec2 r = vec2(
       fbm(p*2.1 + 3.3*q + vec2(1.7, 9.2)),
@@ -184,35 +187,36 @@ const FRAG = /* glsl */ `
     );
 
     // Ridged/turbulent fbm to get smoke-like wisps
-    float nA = fbm(p*1.15 + r*0.5 + vec2(0.0, t*0.045));
-    float nB = fbm((p + q*0.7)*1.9 - vec2(t*0.02, t*0.014));
+    float nA = fbm(p*1.15 + r*0.5 + vec2(0.0, t*0.030));
+    float nB = fbm((p + q*0.7)*1.9 - vec2(t*0.012, t*0.009));
     float ridged = 1.0 - abs(2.0*nA - 1.0);
     float flow    = 1.0 - abs(2.0*nB - 1.0);
-    float smoke = clamp(0.6*ridged + 0.4*flow, 0.0, 1.0);
+    float smoke = clamp(0.7*ridged + 0.3*flow, 0.0, 1.0);
 
     // Additional wisping along a curl-like direction
     vec2 dir = normalize(vec2(r.y, -r.x) + 1e-3);
-    float wisp = fbm(p + dir*(t*0.035) + q*0.28);
+    float wisp = fbm(p + dir*(t*0.022) + q*0.28);
     smoke = mix(smoke, wisp, 0.3);
 
     // Subtle sparkle kept minimal
-    float spark = u_shimmer * (0.2 + 0.8*noise(p*8.0 + r*1.5 + t*0.25));
+    float spark = u_shimmer * (0.2 + 0.8*noise(p*8.0 + r*1.5 + t*0.15));
 
     // Brightness from smoke, with intensity mapping
-    float brightness = clamp(smoothstep(0.28, 0.95, smoke) + spark*0.35, 0.0, 1.0);
+    float brightness = clamp(smoothstep(0.32, 0.95, smoke) + spark*0.35, 0.0, 1.0);
     brightness = pow(brightness, 1.0 + 0.5*(1.0/u_intensity - 1.0));
 
     // Band/ribbon mask to constrain coverage 30-60%
-    float bandOffset = 0.15 * sin(u_time * u_bandDriftSpeed);
-    vec2 rp = rot(u_bandAngle) * (p + vec2(0.0, bandOffset));
+    float bandOffset = 0.08 * sin(u_time * u_bandDriftSpeed);
+    float bandXDrift = 0.04 * sin(u_time * u_bandDriftSpeed * 0.6);
+    vec2 rp = rot(u_bandAngle) * (p + vec2(bandXDrift, bandOffset));
     float width = mix(u_bandWidthMin, u_bandWidthMax, 0.5 + 0.5 * sin(u_time * u_bandDriftSpeed * 0.8));
     float curve = u_bandCurvature * sin(rp.x * 2.2 + u_time * 0.05);
     float bandDist = abs(rp.y - curve);
-    float bandMask = 1.0 - smoothstep(0.0, width, bandDist);
+    float bandMask = 1.0 - smoothstep(0.0, width*0.92, bandDist);
 
     // Final aurora mask including band
     float auroraMask = brightness * bandMask;
-    auroraMask = pow(clamp(auroraMask, 0.0, 1.0), 1.15);
+    auroraMask = pow(clamp(auroraMask, 0.0, 1.0), 1.25);
 
     // Palette: indigo -> purple -> blue -> teal -> green (only at highlights)
     float h = auroraMask;
@@ -232,12 +236,12 @@ const FRAG = /* glsl */ `
     aur = mix(vec3(luma), aur, clamp(u_saturation, 0.0, 1.0));
 
     // Sparse starfield behind aurora, slower twinkle
-    vec2 grid = floor(uv * res * 1.25);
+    vec2 grid = floor(uv * res * 0.9);
     float starSeed = hash(grid);
-    float twinkle = 0.5 + 0.5*sin(u_time*1.2 + starSeed*50.0);
-    float density = mix(0.9995, 0.997, clamp(u_starDensity, 0.0, 1.0));
+    float twinkle = 0.5 + 0.5*sin(u_time*0.6 + starSeed*50.0);
+    float density = mix(0.99985, 0.9985, clamp(u_starDensity, 0.0, 1.0));
     float star = step(density, starSeed) * twinkle * u_starIntensity;
-    star *= (1.0 - auroraMask*0.85); // subdued under bright smoke
+    star *= (1.0 - auroraMask*0.9); // subdued under bright smoke
 
     // Compose deep night background + subtle stars
     vec3 bg = u_bgColor + star * c2 * 0.6;
