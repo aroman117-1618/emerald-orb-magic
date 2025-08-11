@@ -27,23 +27,39 @@ export type AuroraBackgroundProps = {
   starIntensity?: number;   // 0.0 - 1.0 star brightness
   starDensity?: number;     // 0.0 - 1.0 star density
   overlayAmount?: number;   // 0.0 - 1.0 aurora overlay strength
+  // Band/ribbon controls
+  bandAngle?: number;       // radians, orientation of the aurora band
+  bandWidthMin?: number;    // min normalized half-width of band
+  bandWidthMax?: number;    // max normalized half-width of band
+  bandDriftSpeed?: number;  // band width/offset modulation speed
+  bandCurvature?: number;   // subtle curvature amount
+  // Look controls
+  saturation?: number;      // 0..1 (1 = full saturation)
+  gamma?: number;           // >0, tone response
 };
 
 const DEFAULT_PROPS: Required<AuroraBackgroundProps> = {
   colors: {
-    base: "#0b7a4b",    // deep emerald
-    accent: "#1ec6a3",  // turquoise
-    cold: "#80d0ff",    // icy blue
-    purple: "#7B5CF7",  // aurora violet
-    indigo: "#1F3A8A",  // deep indigo
+    base: "#88F79E",    // green highlight
+    accent: "#4EE3C1",  // turquoise
+    cold: "#6FC6FF",    // cool blue
+    purple: "#6B5AE8",  // restrained violet
+    indigo: "#0E1B2E",  // deep indigo/blue
   },
-  intensity: 0.9,
-  speed: 0.65, // we also halve time in shader => overall ~50% slower
-  shimmer: 0.12,
-  backgroundColor: "#050B12",
-  starIntensity: 0.35,
-  starDensity: 0.35,
-  overlayAmount: 0.9,
+  intensity: 0.75,
+  speed: 0.35, // slower base motion; shader time also halved again
+  shimmer: 0.08,
+  backgroundColor: "#02050A",
+  starIntensity: 0.28,
+  starDensity: 0.25,
+  overlayAmount: 0.75,
+  bandAngle: -0.45,
+  bandWidthMin: 0.22,
+  bandWidthMax: 0.45,
+  bandDriftSpeed: 0.03,
+  bandCurvature: 0.15,
+  saturation: 0.9,
+  gamma: 1.1,
 };
 
 // Utility: detect WebGL support
@@ -104,6 +120,17 @@ const FRAG = /* glsl */ `
   uniform float u_starDensity;
   uniform float u_overlayAmount;
 
+  // Band/ribbon uniforms
+  uniform float u_bandAngle;
+  uniform float u_bandWidthMin;
+  uniform float u_bandWidthMax;
+  uniform float u_bandDriftSpeed;
+  uniform float u_bandCurvature;
+
+  // Look controls
+  uniform float u_saturation;
+  uniform float u_gamma;
+
   // Hash / Noise Utilities (iq style)
   float hash(vec2 p){
     p = fract(p*vec2(123.34, 345.45));
@@ -133,6 +160,8 @@ const FRAG = /* glsl */ `
     return v;
   }
 
+  mat2 rot(float a){ return mat2(cos(a), -sin(a), sin(a), cos(a)); }
+
   void main(){
     vec2 uv = vUv; // 0..1
 
@@ -141,42 +170,51 @@ const FRAG = /* glsl */ `
     float ar = res.x / res.y;
     vec2 p = (uv - 0.5) * vec2(ar, 1.0);
 
-    // Slow global time (50% slower overall)
-    float t = u_time * (0.25 + u_speed*0.75) * 0.5;
+    // Even slower global time
+    float t = u_time * (0.25 + u_speed*0.75) * 0.25;
 
     // Domain-warped coordinates for organic motion
     vec2 q = vec2(
-      fbm(p*1.4 + vec2(0.0, t*0.12)),
-      fbm(p*1.4 + vec2(5.2, -t*0.09))
+      fbm(p*1.35 + vec2(0.0, t*0.10)),
+      fbm(p*1.35 + vec2(5.2, -t*0.08))
     );
     vec2 r = vec2(
-      fbm(p*2.2 + 3.5*q + vec2(1.7, 9.2)),
-      fbm(p*2.2 + 3.5*q + vec2(8.3, 2.8))
+      fbm(p*2.1 + 3.3*q + vec2(1.7, 9.2)),
+      fbm(p*2.1 + 3.3*q + vec2(8.3, 2.8))
     );
 
     // Ridged/turbulent fbm to get smoke-like wisps
-    float nA = fbm(p*1.2 + r*0.5 + vec2(0.0, t*0.05));
-    float nB = fbm((p + q*0.75)*2.0 - vec2(t*0.02, t*0.015));
+    float nA = fbm(p*1.15 + r*0.5 + vec2(0.0, t*0.045));
+    float nB = fbm((p + q*0.7)*1.9 - vec2(t*0.02, t*0.014));
     float ridged = 1.0 - abs(2.0*nA - 1.0);
     float flow    = 1.0 - abs(2.0*nB - 1.0);
     float smoke = clamp(0.6*ridged + 0.4*flow, 0.0, 1.0);
 
     // Additional wisping along a curl-like direction
     vec2 dir = normalize(vec2(r.y, -r.x) + 1e-3);
-    float wisp = fbm(p + dir*(t*0.04) + q*0.3);
+    float wisp = fbm(p + dir*(t*0.035) + q*0.28);
     smoke = mix(smoke, wisp, 0.3);
 
-    // Subtle sparkle
-    float spark = u_shimmer * (0.25 + 0.75*noise(p*8.0 + r*1.5 + t*0.3));
+    // Subtle sparkle kept minimal
+    float spark = u_shimmer * (0.2 + 0.8*noise(p*8.0 + r*1.5 + t*0.25));
 
     // Brightness from smoke, with intensity mapping
-    float brightness = clamp(smoothstep(0.25, 0.95, smoke) + spark*0.4, 0.0, 1.0);
+    float brightness = clamp(smoothstep(0.28, 0.95, smoke) + spark*0.35, 0.0, 1.0);
     brightness = pow(brightness, 1.0 + 0.5*(1.0/u_intensity - 1.0));
 
-    // Mask for compositing
-    float auroraMask = brightness;
+    // Band/ribbon mask to constrain coverage 30-60%
+    float bandOffset = 0.15 * sin(u_time * u_bandDriftSpeed);
+    vec2 rp = rot(u_bandAngle) * (p + vec2(0.0, bandOffset));
+    float width = mix(u_bandWidthMin, u_bandWidthMax, 0.5 + 0.5 * sin(u_time * u_bandDriftSpeed * 0.8));
+    float curve = u_bandCurvature * sin(rp.x * 2.2 + u_time * 0.05);
+    float bandDist = abs(rp.y - curve);
+    float bandMask = 1.0 - smoothstep(0.0, width, bandDist);
 
-    // Multi-stop color palette: indigo -> purple -> blue -> teal -> green
+    // Final aurora mask including band
+    float auroraMask = brightness * bandMask;
+    auroraMask = pow(clamp(auroraMask, 0.0, 1.0), 1.15);
+
+    // Palette: indigo -> purple -> blue -> teal -> green (only at highlights)
     float h = auroraMask;
     vec3 c0 = u_indigoColor;
     vec3 c1 = u_purpleColor;
@@ -184,35 +222,37 @@ const FRAG = /* glsl */ `
     vec3 c3 = u_accentColor;
     vec3 c4 = u_baseColor;
 
-    vec3 aur = mix(c0, c1, smoothstep(0.05, 0.30, h));
-    aur = mix(aur, c2, smoothstep(0.20, 0.55, h));
-    aur = mix(aur, c3, smoothstep(0.45, 0.80, h));
-    aur = mix(aur, c4, smoothstep(0.70, 1.00, h));
+    vec3 aur = mix(c0, c1, smoothstep(0.15, 0.28, h));
+    aur = mix(aur, c2, smoothstep(0.30, 0.55, h));
+    aur = mix(aur, c3, smoothstep(0.60, 0.78, h));
+    aur = mix(aur, c4, smoothstep(0.80, 0.98, h));
 
-    // Sparse starfield behind aurora
+    // Desaturate slightly for elegance
+    float luma = dot(aur, vec3(0.299, 0.587, 0.114));
+    aur = mix(vec3(luma), aur, clamp(u_saturation, 0.0, 1.0));
+
+    // Sparse starfield behind aurora, slower twinkle
     vec2 grid = floor(uv * res * 1.25);
     float starSeed = hash(grid);
-    float twinkle = 0.5 + 0.5*sin(u_time*3.0 + starSeed*50.0);
+    float twinkle = 0.5 + 0.5*sin(u_time*1.2 + starSeed*50.0);
     float density = mix(0.9995, 0.997, clamp(u_starDensity, 0.0, 1.0));
     float star = step(density, starSeed) * twinkle * u_starIntensity;
-    star *= (1.0 - auroraMask); // stars are subdued under bright smoke
+    star *= (1.0 - auroraMask*0.85); // subdued under bright smoke
 
     // Compose deep night background + subtle stars
     vec3 bg = u_bgColor + star * c2 * 0.6;
 
-    // Gentle vignette to avoid hard edges (not a strong center bias)
-    float vig = smoothstep(1.25, 0.25, length(p));
-
     // Composite aurora over the background
     vec3 col = mix(bg, aur, auroraMask * u_overlayAmount);
-    col *= mix(0.85, 1.05, vig);
 
-    // Filmic tone tweak
-    col = 1.0 - exp(-col * 1.1);
+    // Filmic tone tweak and gamma
+    col = 1.0 - exp(-col * 1.05);
+    col = pow(max(col, 0.0), vec3(1.0 / max(u_gamma, 0.001)));
 
     gl_FragColor = vec4(col, 1.0);
   }
 `;
+
 
 // React Three Fiber node rendering the shader on a full-screen quad
 function AuroraQuad({
@@ -233,6 +273,13 @@ function AuroraQuad({
     u_starIntensity: { value: number };
     u_starDensity: { value: number };
     u_overlayAmount: { value: number };
+    u_bandAngle: { value: number };
+    u_bandWidthMin: { value: number };
+    u_bandWidthMax: { value: number };
+    u_bandDriftSpeed: { value: number };
+    u_bandCurvature: { value: number };
+    u_saturation: { value: number };
+    u_gamma: { value: number };
   };
 }) {
   const matRef = useRef<THREE.ShaderMaterial>(null!);
@@ -292,6 +339,13 @@ export default function AuroraBackground(props: AuroraBackgroundProps = {}) {
     u_starIntensity: { value: cfg.starIntensity },
     u_starDensity: { value: cfg.starDensity },
     u_overlayAmount: { value: cfg.overlayAmount },
+    u_bandAngle: { value: cfg.bandAngle },
+    u_bandWidthMin: { value: cfg.bandWidthMin },
+    u_bandWidthMax: { value: cfg.bandWidthMax },
+    u_bandDriftSpeed: { value: cfg.bandDriftSpeed },
+    u_bandCurvature: { value: cfg.bandCurvature },
+    u_saturation: { value: cfg.saturation },
+    u_gamma: { value: cfg.gamma },
   }).current;
 
 
@@ -299,8 +353,8 @@ export default function AuroraBackground(props: AuroraBackgroundProps = {}) {
   if (prefersReducedMotion || !webglSupported) {
     return (
       <div aria-hidden className="pointer-events-none fixed inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/20 via-primary/10 to-background" />
-        <div className="absolute inset-0 bg-[radial-gradient(60%_40%_at_50%_45%,hsl(var(--primary)/0.25),transparent_60%)]" />
+        <div className="absolute inset-0 bg-background" />
+        <div className="absolute inset-0 bg-[radial-gradient(40%_30%_at_50%_55%,hsl(var(--primary)/0.12),transparent_60%)]" />
       </div>
     );
   }
