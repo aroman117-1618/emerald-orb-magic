@@ -8,7 +8,7 @@ import { ArrowRight, FileText, Linkedin, Github } from "lucide-react";
 
 const Index = () => {
   return (
-    <main className="relative min-h-screen overflow-hidden bg-background">
+    <main className="relative min-h-screen overflow-hidden bg-transparent">
       <a id="top" className="sr-only" aria-hidden tabIndex={-1} />
       
 

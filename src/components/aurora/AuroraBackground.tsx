@@ -340,7 +340,7 @@ export default function AuroraBackground(props: AuroraBackgroundProps = {}) {
   // Reduced motion or no WebGL: static gradient fallback
   if (prefersReducedMotion || !webglSupported) {
     return (
-      <div aria-hidden className="pointer-events-none fixed inset-0 -z-10">
+      <div aria-hidden className="pointer-events-none fixed inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/20 via-primary/10 to-background" />
         <div className="absolute inset-0 bg-[radial-gradient(60%_40%_at_50%_45%,hsl(var(--primary)/0.25),transparent_60%)]" />
       </div>
@@ -348,7 +348,7 @@ export default function AuroraBackground(props: AuroraBackgroundProps = {}) {
   }
 
   return (
-    <div aria-hidden className="pointer-events-none fixed inset-0 -z-10">
+    <div aria-hidden className="pointer-events-none fixed inset-0 z-0">
       <Canvas
         gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}
         dpr={[1, 2]}
