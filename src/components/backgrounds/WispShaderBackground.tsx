@@ -214,10 +214,10 @@ function WispPlane({
   });
 
   // Fullscreen plane sized to viewport
-  const planeScale = [viewport.width, viewport.height, 1];
+  const planeScale: [number, number, number] = [viewport.width, viewport.height, 1];
 
   return (
-    <mesh scale={planeScale} position={[0, 0, 0]}>
+    <mesh scale={planeScale} position={[0, 0, 0] as [number, number, number]}>
       <planeGeometry args={[1, 1, 1, 1]} />
       {/* @ts-ignore */}
       <shaderMaterial
