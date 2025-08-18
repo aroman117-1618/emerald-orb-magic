@@ -296,6 +296,7 @@ const FlurryPlane: React.FC<FlurryPlaneProps> = ({
   );
 
   useFrame((state) => {
+    console.log("useFrame running, time:", state.clock.elapsedTime);
     if (materialRef.current) {
       materialRef.current.uniforms.u_time.value = state.clock.elapsedTime;
       materialRef.current.uniforms.u_mouse.value = mousePosition;
@@ -334,10 +335,16 @@ const FlurryBackground: React.FC = () => {
   const [mouseInfluence, setMouseInfluence] = useState(0);
   const [ripples, setRipples] = useState<Array<{ x: number; y: number; time: number }>>([]);
 
+  console.log("FlurryBackground component rendering", { reducedMotion });
+
   useEffect(() => {
     if (typeof window === "undefined") return;
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const update = () => setReducedMotion(mq.matches);
+    const update = () => {
+      console.log("Motion preference changed:", mq.matches);
+      // Temporarily force animations to be enabled for debugging
+      setReducedMotion(false);
+    };
     update();
     if (mq.addEventListener) mq.addEventListener("change", update);
     else mq.addListener(update);
@@ -410,6 +417,7 @@ const FlurryBackground: React.FC = () => {
   ];
 
   if (reducedMotion) {
+    console.log("Reduced motion enabled, showing static background");
     return (
       <div
         className="fixed inset-0 -z-10"
@@ -425,6 +433,8 @@ const FlurryBackground: React.FC = () => {
       />
     );
   }
+
+  console.log("Rendering Canvas with colors:", colors.map(c => c.getHexString()));
 
   return (
     <div className="fixed inset-0 -z-10" style={{ background: "rgba(0, 0, 0, 0.95)" }}>
