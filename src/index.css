@@ -17,8 +17,8 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 158 55% 26%;
-    --primary-foreground: 210 40% 98%;
+    --primary: var(--nebula-forest);
+    --primary-foreground: var(--nebula-light);
 
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -26,8 +26,8 @@ All colors MUST be HSL.
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 162 64% 48%;
-    --accent-foreground: 210 40% 98%;
+    --accent: var(--nebula-lime);
+    --accent-foreground: var(--nebula-deep);
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
@@ -38,13 +38,20 @@ All colors MUST be HSL.
 
     --radius: 0.5rem;
 
-    /* Brand + effects tokens */
-    --brand: 158 55% 26%;
-    --brand-glow: 156 70% 36%;
-    --brand-accent: 162 64% 48%;
-    --brand-deep: 160 40% 14%;
-    --gradient-brand: radial-gradient(50% 50% at 30% 30%, hsl(var(--brand-glow)) 0%, transparent 60%), radial-gradient(50% 50% at 70% 70%, hsl(var(--brand)) 0%, transparent 55%);
-    --shadow-glow: 0 0 48px hsl(var(--brand-glow) / 0.35);
+    /* Dark Nebula Color Palette */
+    --nebula-deep: 171 75% 8%;      /* #013026 */
+    --nebula-ocean: 202 89% 23%;    /* #014760 */
+    --nebula-forest: 151 77% 28%;   /* #107e57 */
+    --nebula-lime: 76 57% 53%;      /* #a1ce3f */
+    --nebula-light: 76 48% 73%;     /* #cbe58e */
+    
+    /* Brand + effects tokens using nebula palette */
+    --brand: var(--nebula-forest);
+    --brand-glow: var(--nebula-lime);
+    --brand-accent: var(--nebula-ocean);
+    --brand-deep: var(--nebula-deep);
+    --gradient-brand: radial-gradient(50% 50% at 30% 30%, hsl(var(--nebula-lime)) 0%, transparent 60%), radial-gradient(50% 50% at 70% 70%, hsl(var(--nebula-forest)) 0%, transparent 55%);
+    --shadow-glow: 0 0 48px hsl(var(--nebula-lime) / 0.35);
 
     --sidebar-background: 0 0% 98%;
 

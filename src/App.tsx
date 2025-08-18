@@ -5,14 +5,14 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
-import WispVideoBackground from "@/components/backgrounds/WispVideoBackground";
+import NebulaOrbBackground from "@/components/backgrounds/NebulaOrbBackground";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <WispVideoBackground />
+      <NebulaOrbBackground />
       <Toaster />
       <Sonner />
       <BrowserRouter>
