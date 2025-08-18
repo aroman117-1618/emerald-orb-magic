@@ -291,13 +291,20 @@ const FlurryBackground: React.FC = () => {
     };
   }, []);
 
-  // Define colors inspired by the screenshots - ethereal greens and teals
+  // Define colors with more blues and whites for ethereal variation
   const colors = [
     new THREE.Color(0x013026), // Deep teal
     new THREE.Color(0x107e57), // Medium green
     new THREE.Color(0xa1ce3f), // Bright lime
     new THREE.Color(0x014760), // Deep blue
     new THREE.Color(0xcbe58e), // Light green
+    new THREE.Color(0x4a90e2), // Bright blue
+    new THREE.Color(0x87ceeb), // Sky blue
+    new THREE.Color(0xffffff), // Pure white
+    new THREE.Color(0xe6f3ff), // Light blue-white
+    new THREE.Color(0x1e3a8a), // Royal blue
+    new THREE.Color(0x3b82f6), // Medium blue
+    new THREE.Color(0xdbeafe), // Pale blue
   ];
 
   if (reducedMotion) {
@@ -325,9 +332,9 @@ const FlurryBackground: React.FC = () => {
       >
         {/* Multiple flowing planes at different depths and orientations */}
         <FlurryPlane
-          color1={colors[0]}
-          color2={colors[1]}
-          color3={colors[2]}
+          color1={colors[5]}
+          color2={colors[7]}
+          color3={colors[8]}
           opacity={0.3}
           frequency={0.5}
           amplitude={1.5}
@@ -336,9 +343,9 @@ const FlurryBackground: React.FC = () => {
           scale={[1.2, 1.2, 1]}
         />
         <FlurryPlane
-          color1={colors[1]}
-          color2={colors[3]}
-          color3={colors[4]}
+          color1={colors[6]}
+          color2={colors[9]}
+          color3={colors[11]}
           opacity={0.25}
           frequency={0.3}
           amplitude={2.0}
@@ -347,9 +354,9 @@ const FlurryBackground: React.FC = () => {
           scale={[1.5, 1.8, 1]}
         />
         <FlurryPlane
-          color1={colors[2]}
-          color2={colors[4]}
-          color3={colors[0]}
+          color1={colors[7]}
+          color2={colors[10]}
+          color3={colors[1]}
           opacity={0.2}
           frequency={0.8}
           amplitude={1.2}
@@ -358,9 +365,9 @@ const FlurryBackground: React.FC = () => {
           scale={[1.8, 1.4, 1]}
         />
         <FlurryPlane
-          color1={colors[3]}
-          color2={colors[0]}
-          color3={colors[1]}
+          color1={colors[8]}
+          color2={colors[5]}
+          color3={colors[3]}
           opacity={0.15}
           frequency={0.4}
           amplitude={2.5}
@@ -369,9 +376,9 @@ const FlurryBackground: React.FC = () => {
           scale={[2.0, 1.6, 1]}
         />
         <FlurryPlane
-          color1={colors[4]}
-          color2={colors[2]}
-          color3={colors[3]}
+          color1={colors[11]}
+          color2={colors[6]}
+          color3={colors[9]}
           opacity={0.1}
           frequency={0.6}
           amplitude={1.8}
