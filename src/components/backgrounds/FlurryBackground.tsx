@@ -153,18 +153,21 @@ const FlurryPlane: React.FC<FlurryPlaneProps> = ({
 
   useFrame((state) => {
     if (materialRef.current) {
-      materialRef.current.uniforms.u_time.value = state.clock.elapsedTime;
+      // Limit updates to avoid performance issues
+      const time = state.clock.elapsedTime;
+      materialRef.current.uniforms.u_time.value = time;
       materialRef.current.uniforms.u_mouse.value = mousePosition;
       materialRef.current.uniforms.u_mouseInfluence.value = mouseInfluence;
       
-      // Update ripples
-      const rippleArray = ripples.map(ripple => 
+      // Update ripples more efficiently
+      const rippleArray = ripples.slice(0, 10).map(ripple => 
         new THREE.Vector3(ripple.x, ripple.y, ripple.time)
       );
+      // Fill remaining slots
       while (rippleArray.length < 10) {
         rippleArray.push(new THREE.Vector3(0, 0, -1));
       }
-      materialRef.current.uniforms.u_ripples.value = rippleArray.slice(0, 10);
+      materialRef.current.uniforms.u_ripples.value = rippleArray;
     }
   });
 
@@ -186,9 +189,11 @@ const FlurryPlane: React.FC<FlurryPlaneProps> = ({
 
 const FlurryBackground: React.FC = () => {
   const [reducedMotion, setReducedMotion] = useState(false);
-  const [mousePosition, setMousePosition] = useState(new THREE.Vector2(0, 0));
+  // Optimize mouse tracking with useRef to avoid re-renders
+  const mousePosition = useRef(new THREE.Vector2(0, 0));
   const [mouseInfluence, setMouseInfluence] = useState(0);
-  const [ripples, setRipples] = useState<Array<{ x: number; y: number; time: number }>>([]);
+  // Simplify ripples to avoid complex state updates
+  const ripples = useRef<Array<{ x: number; y: number; time: number }>>([]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -205,13 +210,21 @@ const FlurryBackground: React.FC = () => {
     };
   }, []);
 
-  // Mouse interaction handlers
+  // Mouse interaction handlers - optimized to avoid re-renders
   useEffect(() => {
+    let animationFrame: number;
+    
     const handleMouseMove = (event: MouseEvent) => {
-      const x = (event.clientX / window.innerWidth) * 2 - 1;
-      const y = -(event.clientY / window.innerHeight) * 2 + 1;
-      setMousePosition(new THREE.Vector2(x, y));
-      setMouseInfluence(1.0);
+      // Throttle mouse updates
+      if (animationFrame) return;
+      
+      animationFrame = requestAnimationFrame(() => {
+        const x = (event.clientX / window.innerWidth) * 2 - 1;
+        const y = -(event.clientY / window.innerHeight) * 2 + 1;
+        mousePosition.current.set(x, y);
+        setMouseInfluence(1.0);
+        animationFrame = 0;
+      });
     };
 
     const handleMouseLeave = () => {
@@ -223,10 +236,11 @@ const FlurryBackground: React.FC = () => {
       const y = -(event.clientY / window.innerHeight) * 2 + 1;
       const currentTime = Date.now() / 1000;
       
-      setRipples(prev => [
-        ...prev.filter(ripple => currentTime - ripple.time < 3),
+      // Update ripples directly in ref to avoid state updates
+      ripples.current = [
+        ...ripples.current.filter(ripple => currentTime - ripple.time < 3),
         { x, y, time: currentTime }
-      ].slice(-10));
+      ].slice(-10);
     };
 
     window.addEventListener('mousemove', handleMouseMove);
@@ -234,21 +248,14 @@ const FlurryBackground: React.FC = () => {
     window.addEventListener('click', handleClick);
 
     return () => {
+      if (animationFrame) cancelAnimationFrame(animationFrame);
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseleave', handleMouseLeave);
       window.removeEventListener('click', handleClick);
     };
   }, []);
 
-  // Clean up old ripples
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const currentTime = Date.now() / 1000;
-      setRipples(prev => prev.filter(ripple => currentTime - ripple.time < 3));
-    }, 100);
-
-    return () => clearInterval(interval);
-  }, []);
+  // Removed separate ripple cleanup - now handled in useFrame for better performance
 
   // Define colors with your logo's teal-green and more blues/whites
   const colors = [
@@ -295,29 +302,29 @@ const FlurryBackground: React.FC = () => {
           color1={colors[0]}
           color2={colors[8]}
           color3={colors[2]}
-          opacity={0.6}
-          frequency={2.0}
-          amplitude={8.0}
+          opacity={0.4}
+          frequency={1.0}
+          amplitude={2.0}
           position={[0, 0, -2]}
           rotation={[0, 0, 0]}
           scale={[1.2, 1.2, 1]}
-          mousePosition={mousePosition}
+          mousePosition={mousePosition.current}
           mouseInfluence={mouseInfluence}
-          ripples={ripples}
+          ripples={ripples.current}
         />
         <FlurryPlane
           color1={colors[1]}
           color2={colors[6]}
           color3={colors[9]}
-          opacity={0.5}
-          frequency={1.5}
-          amplitude={6.0}
+          opacity={0.3}
+          frequency={0.8}
+          amplitude={1.5}
           position={[2, -1, -4]}
           rotation={[0.1, 0.2, 0.05]}
           scale={[1.5, 1.5, 1]}
-          mousePosition={mousePosition}
+          mousePosition={mousePosition.current}
           mouseInfluence={mouseInfluence}
-          ripples={ripples}
+          ripples={ripples.current}
         />
       </Canvas>
     </div>
