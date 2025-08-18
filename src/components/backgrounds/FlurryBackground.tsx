@@ -2,11 +2,14 @@ import React, { useEffect, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
-// Vertex shader for the flowing ribbons
+// Vertex shader for the flowing ribbons with water interactions
 const vertexShader = `
   uniform float u_time;
   uniform float u_frequency;
   uniform float u_amplitude;
+  uniform vec2 u_mouse;
+  uniform float u_mouseInfluence;
+  uniform vec3 u_ripples[10];
   varying vec2 vUv;
   varying vec3 vPosition;
   
@@ -100,17 +103,40 @@ const vertexShader = `
     // Combine noises for complex motion
     float combinedNoise = noise1 * 0.5 + noise2 * 0.3 + noise3 * 0.2;
     
-    // Create flowing displacement
-    pos.z += combinedNoise * u_amplitude;
-    pos.x += sin(pos.y * u_frequency + u_time) * u_amplitude * 0.3;
-    pos.y += cos(pos.x * u_frequency + u_time) * u_amplitude * 0.2;
+    // Mouse interaction - create drag effect
+    vec2 worldPos = vec2(pos.x, pos.y);
+    float mouseDistance = distance(worldPos, u_mouse);
+    float mouseEffect = exp(-mouseDistance * 0.5) * u_mouseInfluence;
+    
+    // Ripple effects from clicks
+    float rippleEffect = 0.0;
+    for(int i = 0; i < 10; i++) {
+      vec3 ripple = u_ripples[i];
+      if(ripple.z > 0.0) {
+        float rippleDistance = distance(worldPos, ripple.xy);
+        float rippleTime = u_time - ripple.z;
+        if(rippleTime > 0.0 && rippleTime < 3.0) {
+          float rippleRadius = rippleTime * 5.0;
+          float rippleStrength = exp(-rippleTime * 2.0);
+          float rippleWave = sin(rippleDistance * 3.14159 - rippleTime * 8.0) * rippleStrength;
+          if(abs(rippleDistance - rippleRadius) < 0.5) {
+            rippleEffect += rippleWave * 0.5;
+          }
+        }
+      }
+    }
+    
+    // Create flowing displacement with water effects
+    pos.z += (combinedNoise + mouseEffect + rippleEffect) * u_amplitude;
+    pos.x += (sin(pos.y * u_frequency + u_time) * u_amplitude * 0.3) + (mouseEffect * 0.2);
+    pos.y += (cos(pos.x * u_frequency + u_time) * u_amplitude * 0.2) + (mouseEffect * 0.15);
     
     vPosition = pos;
     gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
   }
 `;
 
-// Fragment shader for ethereal, flowing colors
+// Fragment shader for ethereal, flowing colors with water interactions
 const fragmentShader = `
   uniform float u_time;
   uniform vec2 u_resolution;
@@ -118,6 +144,8 @@ const fragmentShader = `
   uniform vec3 u_color2;
   uniform vec3 u_color3;
   uniform float u_opacity;
+  uniform vec2 u_mouse;
+  uniform float u_mouseInfluence;
   varying vec2 vUv;
   varying vec3 vPosition;
   
@@ -191,9 +219,14 @@ const fragmentShader = `
     // Combine noises for complex patterns
     float pattern = noise1 * 0.5 + noise2 * 0.3 + noise3 * 0.2;
     
-    // Create color mixing based on position and noise
-    float colorMix1 = sin(pattern + u_time * 0.5) * 0.5 + 0.5;
-    float colorMix2 = cos(pattern * 2.0 + u_time * 0.3) * 0.5 + 0.5;
+    // Mouse interaction effects
+    vec2 mouseUv = (u_mouse + 1.0) * 0.5; // Convert from -1,1 to 0,1
+    float mouseDistance = distance(uv, mouseUv);
+    float mouseColorEffect = exp(-mouseDistance * 3.0) * u_mouseInfluence;
+    
+    // Create color mixing based on position, noise, and mouse
+    float colorMix1 = sin(pattern + u_time * 0.5 + mouseColorEffect) * 0.5 + 0.5;
+    float colorMix2 = cos(pattern * 2.0 + u_time * 0.3 + mouseColorEffect * 2.0) * 0.5 + 0.5;
     
     // Blend between three colors for rich variation
     vec3 color = mix(
@@ -202,12 +235,12 @@ const fragmentShader = `
       colorMix2 * 0.6
     );
     
-    // Add subtle brightness variation
-    float brightness = 0.8 + pattern * 0.4;
+    // Add mouse-influenced brightness
+    float brightness = 0.8 + pattern * 0.4 + mouseColorEffect * 0.3;
     color *= brightness;
     
     // Create flowing alpha for ethereal effect
-    float alpha = smoothstep(0.0, 1.0, pattern * 0.8 + 0.4) * u_opacity;
+    float alpha = smoothstep(0.0, 1.0, pattern * 0.8 + 0.4 + mouseColorEffect * 0.2) * u_opacity;
     
     gl_FragColor = vec4(color, alpha);
   }
@@ -223,6 +256,9 @@ interface FlurryPlaneProps {
   position: [number, number, number];
   rotation: [number, number, number];
   scale: [number, number, number];
+  mousePosition: THREE.Vector2;
+  mouseInfluence: number;
+  ripples: Array<{ x: number; y: number; time: number }>;
 }
 
 const FlurryPlane: React.FC<FlurryPlaneProps> = ({
@@ -235,6 +271,9 @@ const FlurryPlane: React.FC<FlurryPlaneProps> = ({
   position,
   rotation,
   scale,
+  mousePosition,
+  mouseInfluence,
+  ripples,
 }) => {
   const meshRef = useRef<THREE.Mesh>(null);
   const materialRef = useRef<THREE.ShaderMaterial>(null);
@@ -249,13 +288,27 @@ const FlurryPlane: React.FC<FlurryPlaneProps> = ({
       u_opacity: { value: opacity },
       u_frequency: { value: frequency },
       u_amplitude: { value: amplitude },
+      u_mouse: { value: mousePosition },
+      u_mouseInfluence: { value: mouseInfluence },
+      u_ripples: { value: new Array(10).fill(new THREE.Vector3(0, 0, -1)) },
     }),
-    [color1, color2, color3, opacity, frequency, amplitude]
+    [color1, color2, color3, opacity, frequency, amplitude, mousePosition, mouseInfluence]
   );
 
   useFrame((state) => {
     if (materialRef.current) {
       materialRef.current.uniforms.u_time.value = state.clock.elapsedTime;
+      materialRef.current.uniforms.u_mouse.value = mousePosition;
+      materialRef.current.uniforms.u_mouseInfluence.value = mouseInfluence;
+      
+      // Update ripples
+      const rippleArray = ripples.map(ripple => 
+        new THREE.Vector3(ripple.x, ripple.y, ripple.time)
+      );
+      while (rippleArray.length < 10) {
+        rippleArray.push(new THREE.Vector3(0, 0, -1));
+      }
+      materialRef.current.uniforms.u_ripples.value = rippleArray.slice(0, 10);
     }
   });
 
@@ -277,6 +330,9 @@ const FlurryPlane: React.FC<FlurryPlaneProps> = ({
 
 const FlurryBackground: React.FC = () => {
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [mousePosition, setMousePosition] = useState(new THREE.Vector2(0, 0));
+  const [mouseInfluence, setMouseInfluence] = useState(0);
+  const [ripples, setRipples] = useState<Array<{ x: number; y: number; time: number }>>([]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -291,12 +347,58 @@ const FlurryBackground: React.FC = () => {
     };
   }, []);
 
-  // Define colors with more blues and whites for ethereal variation
+  // Mouse interaction handlers
+  useEffect(() => {
+    const handleMouseMove = (event: MouseEvent) => {
+      const x = (event.clientX / window.innerWidth) * 2 - 1;
+      const y = -(event.clientY / window.innerHeight) * 2 + 1;
+      setMousePosition(new THREE.Vector2(x, y));
+      setMouseInfluence(1.0);
+    };
+
+    const handleMouseLeave = () => {
+      setMouseInfluence(0);
+    };
+
+    const handleClick = (event: MouseEvent) => {
+      const x = (event.clientX / window.innerWidth) * 2 - 1;
+      const y = -(event.clientY / window.innerHeight) * 2 + 1;
+      const currentTime = Date.now() / 1000;
+      
+      setRipples(prev => [
+        ...prev.filter(ripple => currentTime - ripple.time < 3), // Keep ripples for 3 seconds
+        { x, y, time: currentTime }
+      ].slice(-10)); // Keep max 10 ripples
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseleave', handleMouseLeave);
+    window.addEventListener('click', handleClick);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseleave', handleMouseLeave);
+      window.removeEventListener('click', handleClick);
+    };
+  }, []);
+
+  // Clean up old ripples
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const currentTime = Date.now() / 1000;
+      setRipples(prev => prev.filter(ripple => currentTime - ripple.time < 3));
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Define colors with your logo's teal-green and more blues/whites
   const colors = [
-    new THREE.Color(0x013026), // Deep teal
+    new THREE.Color(0x3d8b73), // Your logo's teal-green
+    new THREE.Color(0x2d6a5a), // Darker teal
+    new THREE.Color(0x4ea085), // Lighter teal
     new THREE.Color(0x107e57), // Medium green
     new THREE.Color(0xa1ce3f), // Bright lime
-    new THREE.Color(0x014760), // Deep blue
     new THREE.Color(0xcbe58e), // Light green
     new THREE.Color(0x4a90e2), // Bright blue
     new THREE.Color(0x87ceeb), // Sky blue
@@ -313,11 +415,11 @@ const FlurryBackground: React.FC = () => {
         className="fixed inset-0 -z-10"
         style={{
           background: `linear-gradient(135deg, 
-            rgba(1, 48, 38, 0.1) 0%, 
-            rgba(16, 126, 87, 0.1) 25%, 
-            rgba(161, 206, 63, 0.1) 50%, 
-            rgba(1, 71, 96, 0.1) 75%, 
-            rgba(203, 229, 142, 0.1) 100%
+            rgba(61, 139, 115, 0.1) 0%, 
+            rgba(45, 106, 90, 0.1) 25%, 
+            rgba(78, 160, 133, 0.1) 50%, 
+            rgba(74, 144, 226, 0.1) 75%, 
+            rgba(255, 255, 255, 0.05) 100%
           )`,
         }}
       />
@@ -332,59 +434,74 @@ const FlurryBackground: React.FC = () => {
       >
         {/* Multiple flowing planes at different depths and orientations */}
         <FlurryPlane
-          color1={colors[5]}
-          color2={colors[7]}
-          color3={colors[8]}
+          color1={colors[0]}
+          color2={colors[8]}
+          color3={colors[2]}
           opacity={0.3}
           frequency={0.5}
           amplitude={1.5}
           position={[0, 0, -2]}
           rotation={[0, 0, 0]}
           scale={[1.2, 1.2, 1]}
+          mousePosition={mousePosition}
+          mouseInfluence={mouseInfluence}
+          ripples={ripples}
         />
         <FlurryPlane
-          color1={colors[6]}
-          color2={colors[9]}
-          color3={colors[11]}
+          color1={colors[1]}
+          color2={colors[6]}
+          color3={colors[9]}
           opacity={0.25}
           frequency={0.3}
           amplitude={2.0}
           position={[3, -2, -4]}
           rotation={[0.2, 0.3, 0.1]}
           scale={[1.5, 1.8, 1]}
+          mousePosition={mousePosition}
+          mouseInfluence={mouseInfluence}
+          ripples={ripples}
         />
         <FlurryPlane
-          color1={colors[7]}
-          color2={colors[10]}
-          color3={colors[1]}
+          color1={colors[3]}
+          color2={colors[7]}
+          color3={colors[10]}
           opacity={0.2}
           frequency={0.8}
           amplitude={1.2}
           position={[-4, 3, -6]}
           rotation={[-0.1, -0.2, 0.15]}
           scale={[1.8, 1.4, 1]}
+          mousePosition={mousePosition}
+          mouseInfluence={mouseInfluence}
+          ripples={ripples}
         />
         <FlurryPlane
-          color1={colors[8]}
-          color2={colors[5]}
-          color3={colors[3]}
+          color1={colors[5]}
+          color2={colors[11]}
+          color3={colors[0]}
           opacity={0.15}
           frequency={0.4}
           amplitude={2.5}
           position={[2, 4, -8]}
           rotation={[0.3, -0.1, -0.2]}
           scale={[2.0, 1.6, 1]}
+          mousePosition={mousePosition}
+          mouseInfluence={mouseInfluence}
+          ripples={ripples}
         />
         <FlurryPlane
-          color1={colors[11]}
-          color2={colors[6]}
-          color3={colors[9]}
+          color1={colors[12]}
+          color2={colors[4]}
+          color3={colors[7]}
           opacity={0.1}
           frequency={0.6}
           amplitude={1.8}
           position={[-3, -4, -10]}
           rotation={[-0.2, 0.4, 0.1]}
           scale={[1.6, 2.2, 1]}
+          mousePosition={mousePosition}
+          mouseInfluence={mouseInfluence}
+          ripples={ripples}
         />
       </Canvas>
     </div>
