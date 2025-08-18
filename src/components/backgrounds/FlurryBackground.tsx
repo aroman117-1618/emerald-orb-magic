@@ -152,19 +152,12 @@ const FlurryPlane: React.FC<FlurryPlaneProps> = ({
   );
 
   useFrame((state) => {
-    const currentTime = state.clock.elapsedTime;
-    console.log("useFrame running, time:", currentTime, "material exists:", !!materialRef.current);
-    
     if (materialRef.current) {
-      // Update time uniform
-      materialRef.current.uniforms.u_time.value = currentTime;
+      materialRef.current.uniforms.u_time.value = state.clock.elapsedTime;
       materialRef.current.uniforms.u_mouse.value = mousePosition;
       materialRef.current.uniforms.u_mouseInfluence.value = mouseInfluence;
       
-      console.log("Updated uniforms - time:", currentTime, "mouse:", mousePosition.x, mousePosition.y, "influence:", mouseInfluence);
-      
       // Update ripples
-      const currentTimeSeconds = Date.now() / 1000;
       const rippleArray = ripples.map(ripple => 
         new THREE.Vector3(ripple.x, ripple.y, ripple.time)
       );
@@ -172,9 +165,6 @@ const FlurryPlane: React.FC<FlurryPlaneProps> = ({
         rippleArray.push(new THREE.Vector3(0, 0, -1));
       }
       materialRef.current.uniforms.u_ripples.value = rippleArray.slice(0, 10);
-      
-      // Force material to update
-      materialRef.current.needsUpdate = true;
     }
   });
 
@@ -200,15 +190,11 @@ const FlurryBackground: React.FC = () => {
   const [mouseInfluence, setMouseInfluence] = useState(0);
   const [ripples, setRipples] = useState<Array<{ x: number; y: number; time: number }>>([]);
 
-  console.log("FlurryBackground component rendering", { reducedMotion, mousePosition, mouseInfluence, rippleCount: ripples.length });
-
   useEffect(() => {
     if (typeof window === "undefined") return;
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     const update = () => {
-      console.log("Motion preference changed:", mq.matches);
-      // Force animations to be enabled for debugging
-      setReducedMotion(false);
+      setReducedMotion(mq.matches);
     };
     update();
     if (mq.addEventListener) mq.addEventListener("change", update);
@@ -224,13 +210,11 @@ const FlurryBackground: React.FC = () => {
     const handleMouseMove = (event: MouseEvent) => {
       const x = (event.clientX / window.innerWidth) * 2 - 1;
       const y = -(event.clientY / window.innerHeight) * 2 + 1;
-      console.log("Mouse move:", x, y);
       setMousePosition(new THREE.Vector2(x, y));
       setMouseInfluence(1.0);
     };
 
     const handleMouseLeave = () => {
-      console.log("Mouse leave");
       setMouseInfluence(0);
     };
 
@@ -239,16 +223,10 @@ const FlurryBackground: React.FC = () => {
       const y = -(event.clientY / window.innerHeight) * 2 + 1;
       const currentTime = Date.now() / 1000;
       
-      console.log("Click at:", x, y, "time:", currentTime);
-      
-      setRipples(prev => {
-        const newRipples = [
-          ...prev.filter(ripple => currentTime - ripple.time < 3),
-          { x, y, time: currentTime }
-        ].slice(-10);
-        console.log("Updated ripples:", newRipples.length);
-        return newRipples;
-      });
+      setRipples(prev => [
+        ...prev.filter(ripple => currentTime - ripple.time < 3),
+        { x, y, time: currentTime }
+      ].slice(-10));
     };
 
     window.addEventListener('mousemove', handleMouseMove);
@@ -266,13 +244,7 @@ const FlurryBackground: React.FC = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       const currentTime = Date.now() / 1000;
-      setRipples(prev => {
-        const filtered = prev.filter(ripple => currentTime - ripple.time < 3);
-        if (filtered.length !== prev.length) {
-          console.log("Cleaned up ripples, now have:", filtered.length);
-        }
-        return filtered;
-      });
+      setRipples(prev => prev.filter(ripple => currentTime - ripple.time < 3));
     }, 100);
 
     return () => clearInterval(interval);
@@ -296,7 +268,6 @@ const FlurryBackground: React.FC = () => {
   ];
 
   if (reducedMotion) {
-    console.log("Reduced motion enabled, showing static background");
     return (
       <div
         className="fixed inset-0 -z-10"
@@ -312,8 +283,6 @@ const FlurryBackground: React.FC = () => {
       />
     );
   }
-
-  console.log("Rendering Canvas with colors:", colors.map(c => c.getHexString()));
 
   return (
     <div className="fixed inset-0 -z-10" style={{ background: "rgba(0, 0, 0, 0.95)" }}>
